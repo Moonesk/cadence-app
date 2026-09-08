@@ -617,6 +617,7 @@ export default function App() {
   const [trafficMode, setTrafficMode] = useState("arrivals"); // "arrivals" | "departures"
   const [trafficStartHour, setTrafficStartHour] = useState(0);
   const [trafficEndHour, setTrafficEndHour] = useState(23);
+  const [hourZone, setHourZone] = useState(now.getHours()); // heure propre à "Demande par zone"
   const [liveTraffic, setLiveTraffic] = useState({ status: "idle", trains: [], flights: [], flightsAvailable: true });
 
   const trafficDate = useMemo(() => {
@@ -687,7 +688,7 @@ export default function App() {
     return diff <= window;
   }
 
-  async function openZoneDetail(zone) {
+  async function openZoneDetail(zone, refHour = hour) {
     setSelectedZone(zone);
     setZoneDetail({ status: "loading", trains: [], flights: [], events: [] });
     try {
@@ -696,7 +697,7 @@ export default function App() {
           `${SERVER_BASE_URL}/api/flights?city=${cityKey}&kind=arrivals&date=${demandDateStr}`
         ).then((r) => r.json());
         if (res.error) throw new Error(res.error);
-        const flights = (res.result || []).filter((f) => isNearHour(f.time, hour));
+        const flights = (res.result || []).filter((f) => isNearHour(f.time, refHour));
         setZoneDetail({ status: "ready", trains: [], flights, events: [] });
       } else if (zone.type === "station") {
         const station = STATION_NAMES[cityKey];
@@ -704,7 +705,7 @@ export default function App() {
           `${SERVER_BASE_URL}/api/trains?station=${encodeURIComponent(station)}&kind=arrivals&date=${demandDateStr}`
         ).then((r) => r.json());
         if (res.error) throw new Error(res.error);
-        const trains = (res.result || []).filter((t) => isNearHour(t.time, hour));
+        const trains = (res.result || []).filter((t) => isNearHour(t.time, refHour));
         setZoneDetail({ status: "ready", trains, flights: [], events: [] });
       } else {
         // Zones affaires / vie nocturne / loisirs -> événements de la ville ce jour-là
@@ -754,7 +755,7 @@ export default function App() {
     return Object.entries(CITIES).filter(([, c]) => normalize(c.label).includes(q));
   }, [cityQuery]);
 
-  const zonesScored = useMemo(() => {
+  const watchZonesScored = useMemo(() => {
     return city.zones
       .map((z) => {
         const curve = dayType === "weekday" ? z.curveWeekday : z.curveWeekend;
@@ -763,7 +764,16 @@ export default function App() {
       .sort((a, b) => b.score - a.score);
   }, [city, dayType, hour]);
 
-  const hotZones = zonesScored.filter((z) => z.score >= 70);
+  const zonesScored = useMemo(() => {
+    return city.zones
+      .map((z) => {
+        const curve = dayType === "weekday" ? z.curveWeekday : z.curveWeekend;
+        return { ...z, curve, score: curve[hourZone] };
+      })
+      .sort((a, b) => b.score - a.score);
+  }, [city, dayType, hourZone]);
+
+  const hotZones = watchZonesScored.filter((z) => z.score >= 70);
   const hourLabel = `${String(hour).padStart(2, "0")}:00`;
   const dayLabel = dayOffset === 0 ? "aujourd'hui" : "demain";
 
@@ -785,17 +795,30 @@ export default function App() {
         .navbtn { transition: color .15s ease; }
         input[type="range"] {
           -webkit-appearance: none;
-          height: 3px;
+          height: 5px;
           background: #3A4578;
-          border-radius: 2px;
+          border-radius: 3px;
         }
         input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 16px; height: 16px; border-radius: 50%;
+          width: 28px; height: 28px; border-radius: 50%;
           background: #4C8DFF;
-          border: 2px solid #0B0F24;
+          border: 3px solid #0B0F24;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.4);
           cursor: pointer;
-          margin-top: -6.5px;
+          margin-top: -11.5px;
+        }
+        input[type="range"]::-moz-range-thumb {
+          width: 28px; height: 28px; border-radius: 50%;
+          background: #4C8DFF;
+          border: 3px solid #0B0F24;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+          cursor: pointer;
+        }
+        input[type="range"]::-moz-range-track {
+          height: 5px;
+          background: #3A4578;
+          border-radius: 3px;
         }
         .leaflet-control-attribution {
           font-size: 8px !important;
@@ -1119,13 +1142,13 @@ export default function App() {
                 </button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-                {zonesScored.slice(0, 4).map((z) => {
+                {watchZonesScored.slice(0, 4).map((z) => {
                   const Icon = ICONS[z.type];
                   const typeLabels = { airport: "Aéroport", station: "Gare", business: "Affaires", nightlife: "Vie nocturne", leisure: "Loisirs" };
                   return (
                     <div
                       key={z.id}
-                      onClick={() => openZoneDetail(z)}
+                      onClick={() => openZoneDetail(z, hour)}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -1285,7 +1308,7 @@ export default function App() {
               </div>
 
               {demandView === "map" && (
-                <DemandMap zones={zonesScored} center={[city.lat, city.lon]} onZoneClick={openZoneDetail} />
+                <DemandMap zones={zonesScored} center={[city.lat, city.lon]} onZoneClick={(z) => openZoneDetail(z, hourZone)} />
               )}
 
               {demandView === "list" && (
@@ -1295,7 +1318,7 @@ export default function App() {
                   return (
                     <div
                       key={z.id}
-                      onClick={() => openZoneDetail(z)}
+                      onClick={() => openZoneDetail(z, hourZone)}
                       style={{
                         background: "#141A38",
                         border: "1px solid #2B3564",
@@ -1326,7 +1349,7 @@ export default function App() {
                         <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {z.name}
                         </div>
-                        <Sparkline values={z.curve} hour={hour} />
+                        <Sparkline values={z.curve} hour={hourZone} />
                       </div>
                       <div
                         style={{
@@ -1347,7 +1370,7 @@ export default function App() {
               </div>
               )}
 
-              {/* Jour + heure (copie en bas de liste, pour ne pas remonter tout en haut) */}
+              {/* Heure — propre à "Demande par zone", indépendante du curseur du haut */}
               <div
                 style={{
                   background: "#141A38",
@@ -1386,8 +1409,8 @@ export default function App() {
                   type="range"
                   min={0}
                   max={23}
-                  value={hour}
-                  onChange={(e) => setHour(Number(e.target.value))}
+                  value={hourZone}
+                  onChange={(e) => setHourZone(Number(e.target.value))}
                   style={{ width: "100%" }}
                 />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#5B6396", marginTop: 4 }}>
