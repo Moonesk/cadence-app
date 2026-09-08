@@ -540,9 +540,13 @@ export default function App() {
   const [dayOffset, setDayOffset] = useState(0); // 0 = aujourd'hui, 1 = demain
   const [hour, setHour] = useState(now.getHours());
   const [tab, setTab] = useState("demande");
-  const [planningDays, setPlanningDays] = useState(["lundi", "mardi", "mercredi", "jeudi", "vendredi"]);
-  const [planningStart, setPlanningStart] = useState(8);
-  const [planningEnd, setPlanningEnd] = useState(20);
+  const [planningSchedule, setPlanningSchedule] = useState(() => {
+    const obj = {};
+    DAYS_OF_WEEK.forEach((d, i) => {
+      obj[d.key] = { enabled: i < 5, start: 8, end: 20 }; // Lun-Ven activés par défaut
+    });
+    return obj;
+  });
   const [demandView, setDemandView] = useState("map"); // "map" | "list"
   const [trafficMode, setTrafficMode] = useState("arrivals"); // "arrivals" | "departures"
   const [liveTraffic, setLiveTraffic] = useState({ status: "idle", trains: [], flights: [], flightsAvailable: true });
@@ -937,7 +941,7 @@ export default function App() {
               <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
                 <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
                 <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
-                  Estimations basées sur des tendances horaires typiques (données de démonstration), pas sur un flux de courses en temps réel.
+                  Estimations basées sur les tendances horaires typiques de la ville.
                 </p>
               </div>
             </>
@@ -1182,147 +1186,156 @@ export default function App() {
                 Mon planning optimal — {city.label}
               </h2>
               <p style={{ fontSize: 12, color: "#9BA3A8", margin: "0 0 14px" }}>
-                Indiquez vos jours et horaires de travail, l'appli vous dit où vous positionner à chaque créneau.
+                Activez vos jours travaillés et réglez vos horaires pour chacun — l'appli vous dit où vous positionner.
               </p>
 
-              <div
-                style={{
-                  background: "#1D2124",
-                  border: "1px solid #262B2F",
-                  borderRadius: 14,
-                  padding: "14px 16px",
-                  marginBottom: 16,
-                }}
-              >
-                <div style={{ fontSize: 12.5, color: "#9BA3A8", marginBottom: 8 }}>Jours travaillés</div>
-                <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
-                  {DAYS_OF_WEEK.map((d) => {
-                    const active = planningDays.includes(d.key);
-                    return (
-                      <button
-                        key={d.key}
-                        onClick={() =>
-                          setPlanningDays((prev) =>
-                            active ? prev.filter((k) => k !== d.key) : [...prev, d.key]
-                          )
-                        }
-                        style={{
-                          width: 40,
-                          height: 34,
-                          borderRadius: 8,
-                          border: "1px solid " + (active ? "#E8934A" : "#33393E"),
-                          background: active ? "rgba(232,147,74,0.15)" : "transparent",
-                          color: active ? "#E8934A" : "#9BA3A8",
-                          fontSize: 12.5,
-                          fontWeight: 500,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {d.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div style={{ fontSize: 12.5, color: "#9BA3A8", marginBottom: 8 }}>Horaires de travail</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <select
-                    value={planningStart}
-                    onChange={(e) => setPlanningStart(Number(e.target.value))}
-                    style={{
-                      flex: 1,
-                      padding: "9px 8px",
-                      borderRadius: 8,
-                      border: "1px solid #33393E",
-                      background: "#14171A",
-                      color: "#EDEFEF",
-                      fontSize: 13,
-                    }}
-                  >
-                    {Array.from({ length: 24 }, (_, h) => (
-                      <option key={h} value={h}>
-                        {formatHour(h)}
-                      </option>
-                    ))}
-                  </select>
-                  <span style={{ color: "#6D757B", fontSize: 13 }}>à</span>
-                  <select
-                    value={planningEnd}
-                    onChange={(e) => setPlanningEnd(Number(e.target.value))}
-                    style={{
-                      flex: 1,
-                      padding: "9px 8px",
-                      borderRadius: 8,
-                      border: "1px solid #33393E",
-                      background: "#14171A",
-                      color: "#EDEFEF",
-                      fontSize: 13,
-                    }}
-                  >
-                    {Array.from({ length: 24 }, (_, h) => (
-                      <option key={h} value={h}>
-                        {formatHour(h)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {planningDays.length === 0 && (
-                <p style={{ fontSize: 13, color: "#9BA3A8" }}>Sélectionnez au moins un jour travaillé.</p>
-              )}
-
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {DAYS_OF_WEEK.filter((d) => planningDays.includes(d.key)).map((d) => {
-                  const segments = buildDaySegments(city.zones, d.dayType, planningStart, planningEnd);
+                {DAYS_OF_WEEK.map((d) => {
+                  const daySchedule = planningSchedule[d.key];
+                  const segments = daySchedule.enabled
+                    ? buildDaySegments(city.zones, d.dayType, daySchedule.start, daySchedule.end)
+                    : [];
+
                   return (
                     <div
                       key={d.key}
                       style={{
                         background: "#1D2124",
-                        border: "1px solid #262B2F",
+                        border: "1px solid " + (daySchedule.enabled ? "#262B2F" : "#1D2124"),
                         borderRadius: 14,
                         padding: "12px 14px",
+                        opacity: daySchedule.enabled ? 1 : 0.6,
                       }}
                     >
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13.5, marginBottom: 8 }}>
-                        {d.full}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: daySchedule.enabled ? 10 : 0 }}>
+                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13.5 }}>
+                          {d.full}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setPlanningSchedule((prev) => ({
+                              ...prev,
+                              [d.key]: { ...prev[d.key], enabled: !prev[d.key].enabled },
+                            }))
+                          }
+                          style={{
+                            width: 40,
+                            height: 22,
+                            borderRadius: 999,
+                            border: "none",
+                            background: daySchedule.enabled ? "#E8934A" : "#33393E",
+                            position: "relative",
+                            cursor: "pointer",
+                            flexShrink: 0,
+                          }}
+                          aria-label={daySchedule.enabled ? "Désactiver ce jour" : "Activer ce jour"}
+                        >
+                          <span
+                            style={{
+                              position: "absolute",
+                              top: 3,
+                              left: daySchedule.enabled ? 21 : 3,
+                              width: 16,
+                              height: 16,
+                              borderRadius: "50%",
+                              background: "#14171A",
+                              transition: "left .15s ease",
+                            }}
+                          />
+                        </button>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        {segments.map((s, i) => {
-                          const Icon = ICONS[s.type];
-                          return (
-                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                              <span
-                                style={{
-                                  fontFamily: "'Space Grotesk', sans-serif",
-                                  fontSize: 12,
-                                  color: "#9BA3A8",
-                                  width: 78,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {formatHour(s.startHour)}–{formatHour((s.endHour + 1) % 24)}
-                              </span>
-                              <Icon size={14} color={demandColor(s.avgScore)} style={{ flexShrink: 0 }} />
-                              <span style={{ fontSize: 13, flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                {s.name}
-                              </span>
-                              <span
-                                style={{
-                                  fontFamily: "'Space Grotesk', sans-serif",
-                                  fontWeight: 600,
-                                  fontSize: 13,
-                                  color: demandColor(s.avgScore),
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {s.avgScore}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
+
+                      {daySchedule.enabled && (
+                        <>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                            <select
+                              value={daySchedule.start}
+                              onChange={(e) =>
+                                setPlanningSchedule((prev) => ({
+                                  ...prev,
+                                  [d.key]: { ...prev[d.key], start: Number(e.target.value) },
+                                }))
+                              }
+                              style={{
+                                flex: 1,
+                                padding: "7px 6px",
+                                borderRadius: 8,
+                                border: "1px solid #33393E",
+                                background: "#14171A",
+                                color: "#EDEFEF",
+                                fontSize: 12.5,
+                              }}
+                            >
+                              {Array.from({ length: 24 }, (_, h) => (
+                                <option key={h} value={h}>
+                                  {formatHour(h)}
+                                </option>
+                              ))}
+                            </select>
+                            <span style={{ color: "#6D757B", fontSize: 12.5 }}>à</span>
+                            <select
+                              value={daySchedule.end}
+                              onChange={(e) =>
+                                setPlanningSchedule((prev) => ({
+                                  ...prev,
+                                  [d.key]: { ...prev[d.key], end: Number(e.target.value) },
+                                }))
+                              }
+                              style={{
+                                flex: 1,
+                                padding: "7px 6px",
+                                borderRadius: 8,
+                                border: "1px solid #33393E",
+                                background: "#14171A",
+                                color: "#EDEFEF",
+                                fontSize: 12.5,
+                              }}
+                            >
+                              {Array.from({ length: 24 }, (_, h) => (
+                                <option key={h} value={h}>
+                                  {formatHour(h)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {segments.map((s, i) => {
+                              const Icon = ICONS[s.type];
+                              return (
+                                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                  <span
+                                    style={{
+                                      fontFamily: "'Space Grotesk', sans-serif",
+                                      fontSize: 12,
+                                      color: "#9BA3A8",
+                                      width: 78,
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    {formatHour(s.startHour)}–{formatHour((s.endHour + 1) % 24)}
+                                  </span>
+                                  <Icon size={14} color={demandColor(s.avgScore)} style={{ flexShrink: 0 }} />
+                                  <span style={{ fontSize: 13, flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                    {s.name}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontFamily: "'Space Grotesk', sans-serif",
+                                      fontWeight: 600,
+                                      fontSize: 13,
+                                      color: demandColor(s.avgScore),
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    {s.avgScore}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
                     </div>
                   );
                 })}
