@@ -799,12 +799,13 @@ export default function App() {
         }
         .leaflet-control-attribution {
           font-size: 8px !important;
-          background: rgba(11,15,36,0.55) !important;
-          color: #8A92C2 !important;
+          background: rgba(255,255,255,0.55) !important;
+          color: #555 !important;
           padding: 0 4px !important;
           line-height: 1.6 !important;
+          border-radius: 4px 0 0 0 !important;
         }
-        .leaflet-control-attribution a { color: #8A92C2 !important; }
+        .leaflet-control-attribution a { color: #555 !important; }
       `}</style>
 
       {/* Cadre "téléphone" */}
