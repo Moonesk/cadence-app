@@ -65,6 +65,15 @@ const TYPE_COLORS = {
   leisure: "#FF9F43", // orange
 };
 
+function eventCategoryColor(category) {
+  const c = (category || "").toLowerCase();
+  if (c.includes("sport")) return "#4C8DFF";
+  if (c.includes("musi") || c.includes("concert")) return "#8C6FF7";
+  if (c.includes("thé") || c.includes("theatre") || c.includes("arts")) return "#FF6FA5";
+  if (c.includes("film") || c.includes("cinéma")) return "#2FD480";
+  return "#FF9F43";
+}
+
 /* ---------------------------------------------------------
    Modèles génériques de pics par type de zone — utilisés pour
    générer rapidement les courbes des nouvelles villes, en
@@ -1455,11 +1464,24 @@ export default function App() {
                           gap: 10,
                           background: "#141A38",
                           border: "1px solid #2B3564",
-                          borderRadius: 10,
+                          borderRadius: 12,
                           padding: "9px 12px",
                         }}
                       >
-                        <TrainFront size={15} color="#2FD480" style={{ flexShrink: 0 }} />
+                        <div
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 9,
+                            background: "#2FD480",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <TrainFront size={15} color="#0B0F24" strokeWidth={2.3} />
+                        </div>
                         <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>
                           {t.time}
                         </span>
@@ -1489,11 +1511,24 @@ export default function App() {
                             gap: 10,
                             background: "#141A38",
                             border: "1px solid #2B3564",
-                            borderRadius: 10,
+                            borderRadius: 12,
                             padding: "9px 12px",
                           }}
                         >
-                          <Plane size={15} color="#4C8DFF" style={{ flexShrink: 0 }} />
+                          <div
+                            style={{
+                              width: 30,
+                              height: 30,
+                              borderRadius: 9,
+                              background: "#4C8DFF",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Plane size={15} color="#0B0F24" strokeWidth={2.3} />
+                          </div>
                           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>
                             {f.time}
                           </span>
@@ -1554,16 +1589,35 @@ export default function App() {
               )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {(liveEvents.status === "ready" ? liveEvents.events : city.events || []).map((ev, i) => (
+                {(liveEvents.status === "ready" ? liveEvents.events : city.events || []).map((ev, i) => {
+                  const catColor = eventCategoryColor(ev.category || ev.impact);
+                  return (
                   <div
                     key={i}
                     style={{
+                      display: "flex",
+                      gap: 12,
                       background: "#141A38",
                       border: "1px solid #2B3564",
                       borderRadius: 14,
                       padding: "13px 14px",
                     }}
                   >
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 11,
+                        background: catColor,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <CalendarDays size={16} color="#0B0F24" strokeWidth={2.3} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                       <div style={{ fontSize: 14, fontWeight: 500 }}>{ev.name}</div>
                       <span
@@ -1572,8 +1626,8 @@ export default function App() {
                           padding: "2px 8px",
                           borderRadius: 999,
                           flexShrink: 0,
-                          color: "#2FD480",
-                          background: "rgba(62,142,138,0.14)",
+                          color: catColor,
+                          background: `${catColor}22`,
                         }}
                       >
                         {ev.category || ev.impact || "Événement"}
@@ -1585,8 +1639,10 @@ export default function App() {
                     <div style={{ fontSize: 12.5, color: "#8A92C2", marginTop: 2 }}>
                       {ev.venue || ev.zone}
                     </div>
+                    </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#141A38", borderRadius: 10, border: "1px solid #2B3564" }}>
                 <Info size={15} color="#5B6396" style={{ flexShrink: 0, marginTop: 1 }} />
@@ -1734,16 +1790,32 @@ export default function App() {
                                   >
                                     {formatHour(s.startHour)}–{formatHour((s.endHour + 1) % 24)}
                                   </span>
-                                  <Icon size={14} color={demandColor(s.avgScore)} style={{ flexShrink: 0 }} />
+                                  <div
+                                    style={{
+                                      width: 26,
+                                      height: 26,
+                                      borderRadius: 8,
+                                      background: TYPE_COLORS[s.type],
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    <Icon size={13} color="#0B0F24" strokeWidth={2.3} />
+                                  </div>
                                   <span style={{ fontSize: 13, flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                     {s.name}
                                   </span>
                                   <span
                                     style={{
                                       fontFamily: "'Space Grotesk', sans-serif",
-                                      fontWeight: 600,
-                                      fontSize: 13,
+                                      fontWeight: 700,
+                                      fontSize: 12,
                                       color: demandColor(s.avgScore),
+                                      background: `${demandColor(s.avgScore)}22`,
+                                      borderRadius: 999,
+                                      padding: "3px 8px",
                                       flexShrink: 0,
                                     }}
                                   >
@@ -1780,42 +1852,95 @@ export default function App() {
                 </p>
               )}
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-                {hotZones.map((z) => (
-                  <div
-                    key={z.id}
-                    style={{
-                      background: "#141A38",
-                      border: "1px solid #2B3564",
-                      borderLeft: "3px solid " + demandColor(z.score),
-                      borderRadius: 10,
-                      padding: "11px 14px",
-                      fontSize: 13.5,
-                    }}
-                  >
-                    Forte demande estimée à <strong>{z.name}</strong> ({z.score}/100)
-                  </div>
-                ))}
+                {hotZones.map((z) => {
+                  const Icon = ICONS[z.type];
+                  return (
+                    <div
+                      key={z.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        background: "#141A38",
+                        border: "1px solid #2B3564",
+                        borderRadius: 14,
+                        padding: "11px 14px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 10,
+                          background: TYPE_COLORS[z.type],
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon size={15} color="#0B0F24" strokeWidth={2.3} />
+                      </div>
+                      <div style={{ fontSize: 13.5, flex: 1 }}>
+                        Forte demande estimée à <strong>{z.name}</strong>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: demandColor(z.score),
+                          background: `${demandColor(z.score)}22`,
+                          borderRadius: 999,
+                          padding: "3px 9px",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {z.score}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "0 0 10px" }}>
                 À venir
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {(liveEvents.status === "ready" ? liveEvents.events : city.events || []).slice(0, 5).map((ev, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      background: "#141A38",
-                      border: "1px solid #2B3564",
-                      borderLeft: "3px solid #4C8DFF",
-                      borderRadius: 10,
-                      padding: "11px 14px",
-                      fontSize: 13.5,
-                    }}
-                  >
-                    {ev.name} — {ev.date} ({ev.venue || ev.zone})
-                  </div>
-                ))}
+                {(liveEvents.status === "ready" ? liveEvents.events : city.events || []).slice(0, 5).map((ev, i) => {
+                  const catColor = eventCategoryColor(ev.category || ev.impact);
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        background: "#141A38",
+                        border: "1px solid #2B3564",
+                        borderRadius: 14,
+                        padding: "11px 14px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 10,
+                          background: catColor,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <CalendarDays size={15} color="#0B0F24" strokeWidth={2.3} />
+                      </div>
+                      <div style={{ fontSize: 13.5, flex: 1, minWidth: 0 }}>
+                        {ev.name} — {ev.date} ({ev.venue || ev.zone})
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}
