@@ -569,12 +569,10 @@ function DemandMap({ zones, center, onZoneClick }) {
           attribution='&copy; OpenStreetMap'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {showTraffic && (
-          <TileLayer
-            url={`https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${TOMTOM_KEY}`}
-            opacity={0.75}
-          />
-        )}
+        <TileLayer
+          url={`https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${TOMTOM_KEY}`}
+          opacity={showTraffic ? 0.75 : 0}
+        />
         {zones.map((z) => (
           <CircleMarker
             key={z.id}
