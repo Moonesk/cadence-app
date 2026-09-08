@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
+import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import {
   MapPin,
   CalendarDays,
@@ -10,6 +12,8 @@ import {
   Sparkles,
   Info,
   Search,
+  List,
+  Map as MapIcon,
 } from "lucide-react";
 
 function normalize(s) {
@@ -70,19 +74,19 @@ const RAW_CITIES = {
     lat: 48.8566,
     lon: 2.3522,
     zones: [
-      { id: "cdg", name: "Roissy CDG", type: "airport", baseline: 10,
+      { id: "cdg", name: "Roissy CDG", type: "airport", baseline: 10, lat: 49.0097, lon: 2.5479,
         weekday: [{ c: 6, w: 1.4, h: 55 }, { c: 22, w: 1.4, h: 58 }],
         weekend: [{ c: 7, w: 1.6, h: 48 }, { c: 22, w: 1.6, h: 52 }] },
-      { id: "gares", name: "Gare du Nord / Gare de Lyon", type: "station", baseline: 14,
+      { id: "gares", name: "Gare du Nord / Gare de Lyon", type: "station", baseline: 14, lat: 48.862, lon: 2.365,
         weekday: [{ c: 8, w: 1.1, h: 68 }, { c: 18, w: 1.1, h: 62 }],
         weekend: [{ c: 11, w: 2, h: 38 }, { c: 19, w: 2, h: 42 }] },
-      { id: "defense", name: "La Défense", type: "business", baseline: 6,
+      { id: "defense", name: "La Défense", type: "business", baseline: 6, lat: 48.8918, lon: 2.236,
         weekday: [{ c: 8, w: 1, h: 75 }, { c: 18, w: 1, h: 80 }],
         weekend: [{ c: 14, w: 3, h: 12 }] },
-      { id: "bastille", name: "Bastille / Oberkampf", type: "nightlife", baseline: 8,
+      { id: "bastille", name: "Bastille / Oberkampf", type: "nightlife", baseline: 8, lat: 48.8532, lon: 2.3692,
         weekday: [{ c: 23, w: 1.4, h: 32 }],
         weekend: [{ c: 23, w: 1.8, h: 82 }, { c: 1, w: 1.4, h: 58 }] },
-      { id: "champs", name: "Champs-Élysées / Opéra", type: "leisure", baseline: 12,
+      { id: "champs", name: "Champs-Élysées / Opéra", type: "leisure", baseline: 12, lat: 48.8698, lon: 2.3075,
         weekday: [{ c: 13, w: 3, h: 36 }, { c: 19, w: 2, h: 28 }],
         weekend: [{ c: 15, w: 3, h: 52 }, { c: 21, w: 2, h: 48 }] },
     ],
@@ -97,19 +101,19 @@ const RAW_CITIES = {
     lat: 45.764,
     lon: 4.8357,
     zones: [
-      { id: "sxb", name: "Aéroport Saint-Exupéry", type: "airport", baseline: 9,
+      { id: "sxb", name: "Aéroport Saint-Exupéry", type: "airport", baseline: 9, lat: 45.7256, lon: 5.0811,
         weekday: [{ c: 6, w: 1.4, h: 48 }, { c: 21, w: 1.4, h: 52 }],
         weekend: [{ c: 7, w: 1.6, h: 40 }, { c: 21, w: 1.6, h: 44 }] },
-      { id: "partdieu", name: "Part-Dieu", type: "station", baseline: 12,
+      { id: "partdieu", name: "Part-Dieu", type: "station", baseline: 12, lat: 45.7602, lon: 4.8598,
         weekday: [{ c: 8, w: 1, h: 66 }, { c: 18, w: 1, h: 66 }],
         weekend: [{ c: 11, w: 2, h: 34 }] },
-      { id: "confluence", name: "Confluence", type: "leisure", baseline: 10,
+      { id: "confluence", name: "Confluence", type: "leisure", baseline: 10, lat: 45.7396, lon: 4.8187,
         weekday: [{ c: 13, w: 2, h: 28 }, { c: 19, w: 2, h: 32 }],
         weekend: [{ c: 15, w: 3, h: 48 }] },
-      { id: "vieuxlyon", name: "Vieux Lyon / Presqu'île", type: "nightlife", baseline: 7,
+      { id: "vieuxlyon", name: "Vieux Lyon / Presqu'île", type: "nightlife", baseline: 7, lat: 45.7626, lon: 4.8322,
         weekday: [{ c: 23, w: 1.4, h: 28 }],
         weekend: [{ c: 23, w: 1.8, h: 78 }, { c: 1, w: 1.4, h: 52 }] },
-      { id: "gerland", name: "Gerland", type: "business", baseline: 8,
+      { id: "gerland", name: "Gerland", type: "business", baseline: 8, lat: 45.7275, lon: 4.8264,
         weekday: [{ c: 8, w: 1, h: 40 }, { c: 18, w: 1.5, h: 30 }],
         weekend: [{ c: 20, w: 2, h: 20 }] },
     ],
@@ -123,19 +127,19 @@ const RAW_CITIES = {
     lat: 43.2965,
     lon: 5.3698,
     zones: [
-      { id: "mrs", name: "Aéroport Marseille Provence", type: "airport", baseline: 9,
+      { id: "mrs", name: "Aéroport Marseille Provence", type: "airport", baseline: 9, lat: 43.4393, lon: 5.2214,
         weekday: [{ c: 6, w: 1.4, h: 44 }, { c: 21, w: 1.4, h: 48 }],
         weekend: [{ c: 7, w: 1.6, h: 38 }, { c: 21, w: 1.6, h: 40 }] },
-      { id: "stcharles", name: "Saint-Charles", type: "station", baseline: 12,
+      { id: "stcharles", name: "Saint-Charles", type: "station", baseline: 12, lat: 43.3035, lon: 5.3805,
         weekday: [{ c: 8, w: 1, h: 62 }, { c: 18, w: 1, h: 58 }],
         weekend: [{ c: 12, w: 2, h: 34 }] },
-      { id: "vieuxport", name: "Vieux-Port", type: "nightlife", baseline: 10,
+      { id: "vieuxport", name: "Vieux-Port", type: "nightlife", baseline: 10, lat: 43.2951, lon: 5.3739,
         weekday: [{ c: 20, w: 2, h: 32 }],
         weekend: [{ c: 22, w: 2, h: 74 }, { c: 0, w: 1.4, h: 54 }] },
-      { id: "prado", name: "Prado / 8e", type: "business", baseline: 8,
+      { id: "prado", name: "Prado / 8e", type: "business", baseline: 8, lat: 43.2704, lon: 5.3948,
         weekday: [{ c: 8, w: 1, h: 52 }, { c: 18, w: 1, h: 52 }],
         weekend: [{ c: 14, w: 3, h: 14 }] },
-      { id: "castellane", name: "Castellane", type: "leisure", baseline: 10,
+      { id: "castellane", name: "Castellane", type: "leisure", baseline: 10, lat: 43.287, lon: 5.3809,
         weekday: [{ c: 13, w: 2, h: 26 }],
         weekend: [{ c: 22, w: 2, h: 46 }] },
     ],
@@ -149,19 +153,19 @@ const RAW_CITIES = {
     lat: 43.6047,
     lon: 1.4442,
     zones: [
-      { id: "blagnac", name: "Aéroport Blagnac", type: "airport", baseline: 9,
+      { id: "blagnac", name: "Aéroport Blagnac", type: "airport", baseline: 9, lat: 43.6293, lon: 1.3638,
         weekday: [{ c: 6, w: 1.4, h: 44 }, { c: 21, w: 1.4, h: 46 }],
         weekend: [{ c: 7, w: 1.6, h: 36 }, { c: 21, w: 1.6, h: 38 }] },
-      { id: "matabiau", name: "Matabiau", type: "station", baseline: 11,
+      { id: "matabiau", name: "Matabiau", type: "station", baseline: 11, lat: 43.6112, lon: 1.4536,
         weekday: [{ c: 8, w: 1, h: 58 }, { c: 18, w: 1, h: 56 }],
         weekend: [{ c: 12, w: 2, h: 30 }] },
-      { id: "capitole", name: "Capitole / centre-ville", type: "nightlife", baseline: 10,
+      { id: "capitole", name: "Capitole / centre-ville", type: "nightlife", baseline: 10, lat: 43.6045, lon: 1.4442,
         weekday: [{ c: 20, w: 2, h: 32 }],
         weekend: [{ c: 22, w: 2, h: 68 }, { c: 0, w: 1.4, h: 48 }] },
-      { id: "compans", name: "Compans-Caffarelli", type: "business", baseline: 7,
+      { id: "compans", name: "Compans-Caffarelli", type: "business", baseline: 7, lat: 43.6103, lon: 1.4325,
         weekday: [{ c: 8, w: 1, h: 48 }, { c: 18, w: 1, h: 48 }],
         weekend: [{ c: 14, w: 3, h: 10 }] },
-      { id: "stcyprien", name: "Saint-Cyprien", type: "leisure", baseline: 9,
+      { id: "stcyprien", name: "Saint-Cyprien", type: "leisure", baseline: 9, lat: 43.5985, lon: 1.4324,
         weekday: [{ c: 13, w: 2, h: 22 }],
         weekend: [{ c: 16, w: 3, h: 32 }] },
     ],
@@ -175,19 +179,19 @@ const RAW_CITIES = {
     lat: 48.1173,
     lon: -1.6778,
     zones: [
-      { id: "gare-rennes", name: "Gare de Rennes", type: "station", baseline: 12,
+      { id: "gare-rennes", name: "Gare de Rennes", type: "station", baseline: 12, lat: 48.1036, lon: -1.6725,
         weekday: [{ c: 8, w: 1, h: 62 }, { c: 18, w: 1, h: 60 }],
         weekend: [{ c: 12, w: 2, h: 34 }, { c: 19, w: 2, h: 32 }] },
-      { id: "aeroport-rennes", name: "Aéroport Rennes - Saint-Jacques", type: "airport", baseline: 6,
+      { id: "aeroport-rennes", name: "Aéroport Rennes - Saint-Jacques", type: "airport", baseline: 6, lat: 48.0695, lon: -1.7344,
         weekday: [{ c: 7, w: 1.4, h: 26 }, { c: 20, w: 1.4, h: 28 }],
         weekend: [{ c: 8, w: 1.6, h: 22 }, { c: 20, w: 1.6, h: 22 }] },
-      { id: "sainte-anne", name: "Sainte-Anne / rue de la Soif", type: "nightlife", baseline: 8,
+      { id: "sainte-anne", name: "Sainte-Anne / rue de la Soif", type: "nightlife", baseline: 8, lat: 48.1147, lon: -1.6799,
         weekday: [{ c: 23, w: 1.4, h: 34 }],
         weekend: [{ c: 23, w: 1.8, h: 80 }, { c: 1, w: 1.4, h: 56 }] },
-      { id: "beaulieu", name: "Beaulieu (campus)", type: "business", baseline: 7,
+      { id: "beaulieu", name: "Beaulieu (campus)", type: "business", baseline: 7, lat: 48.1174, lon: -1.6407,
         weekday: [{ c: 8, w: 1, h: 48 }, { c: 17, w: 1.2, h: 44 }],
         weekend: [{ c: 14, w: 3, h: 10 }] },
-      { id: "colombier", name: "Colombier / centre commercial", type: "leisure", baseline: 9,
+      { id: "colombier", name: "Colombier / centre commercial", type: "leisure", baseline: 9, lat: 48.1039, lon: -1.6832,
         weekday: [{ c: 13, w: 2, h: 26 }, { c: 18, w: 2, h: 24 }],
         weekend: [{ c: 15, w: 3, h: 42 }] },
     ],
@@ -200,11 +204,11 @@ const RAW_CITIES = {
     label: "Nice",
     lat: 43.7102, lon: 7.2620,
     zones: [
-      { id: "aeroport-nice", name: "Aéroport Nice Côte d'Azur", type: "airport", baseline: 11, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
-      { id: "gare-nice", name: "Nice Ville", type: "station", baseline: 12, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "vieux-nice", name: "Vieux Nice / Promenade des Anglais", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "affaires-nice", name: "Quartier d'affaires", type: "business", baseline: 6, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "commercial-nice", name: "Nice Étoile / centre commercial", type: "leisure", baseline: 10, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "aeroport-nice", name: "Aéroport Nice Côte d'Azur", type: "airport", baseline: 11, lat: 43.6584, lon: 7.2159, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-nice", name: "Nice Ville", type: "station", baseline: 12, lat: 43.7047, lon: 7.262, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "vieux-nice", name: "Vieux Nice / Promenade des Anglais", type: "nightlife", baseline: 9, lat: 43.6959, lon: 7.2762, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-nice", name: "Quartier d'affaires", type: "business", baseline: 6, lat: 43.7, lon: 7.25, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-nice", name: "Nice Étoile / centre commercial", type: "leisure", baseline: 10, lat: 43.6995, lon: 7.273, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -212,9 +216,9 @@ const RAW_CITIES = {
     label: "Cannes",
     lat: 43.5528, lon: 7.0174,
     zones: [
-      { id: "gare-cannes", name: "Cannes", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "croisette", name: "La Croisette", type: "nightlife", baseline: 11, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "palais-festivals", name: "Palais des Festivals", type: "leisure", baseline: 10, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "gare-cannes", name: "Cannes", type: "station", baseline: 10, lat: 43.5511, lon: 7.0181, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "croisette", name: "La Croisette", type: "nightlife", baseline: 11, lat: 43.5495, lon: 7.0189, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "palais-festivals", name: "Palais des Festivals", type: "leisure", baseline: 10, lat: 43.5498, lon: 7.017, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -222,9 +226,9 @@ const RAW_CITIES = {
     label: "Antibes",
     lat: 43.5804, lon: 7.1251,
     zones: [
-      { id: "gare-antibes", name: "Antibes", type: "station", baseline: 9, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "vieil-antibes", name: "Vieil Antibes / Port Vauban", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "bord-de-mer-antibes", name: "Bord de mer / Marineland", type: "leisure", baseline: 9, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "gare-antibes", name: "Antibes", type: "station", baseline: 9, lat: 43.581, lon: 7.1219, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "vieil-antibes", name: "Vieil Antibes / Port Vauban", type: "nightlife", baseline: 9, lat: 43.5804, lon: 7.1251, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "bord-de-mer-antibes", name: "Bord de mer / Marineland", type: "leisure", baseline: 9, lat: 43.605, lon: 7.1, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -232,9 +236,9 @@ const RAW_CITIES = {
     label: "Monaco",
     lat: 43.7384, lon: 7.4246,
     zones: [
-      { id: "gare-monaco", name: "Monaco-Monte-Carlo", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "monte-carlo", name: "Monte-Carlo / Casino", type: "nightlife", baseline: 13, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "port-hercule", name: "Port Hercule / Fontvieille", type: "business", baseline: 9, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "gare-monaco", name: "Monaco-Monte-Carlo", type: "station", baseline: 10, lat: 43.7396, lon: 7.4276, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "monte-carlo", name: "Monte-Carlo / Casino", type: "nightlife", baseline: 13, lat: 43.7396, lon: 7.4297, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "port-hercule", name: "Port Hercule / Fontvieille", type: "business", baseline: 9, lat: 43.7325, lon: 7.423, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
     ],
     events: [],
   },
@@ -242,11 +246,11 @@ const RAW_CITIES = {
     label: "Nantes",
     lat: 47.2184, lon: -1.5536,
     zones: [
-      { id: "aeroport-nantes", name: "Aéroport Nantes Atlantique", type: "airport", baseline: 9, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
-      { id: "gare-nantes", name: "Nantes", type: "station", baseline: 12, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "bouffay", name: "Bouffay / centre historique", type: "nightlife", baseline: 8, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "euronantes", name: "Quartier d'affaires - Euronantes", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "ile-de-nantes", name: "Île de Nantes / Les Machines", type: "leisure", baseline: 9, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "aeroport-nantes", name: "Aéroport Nantes Atlantique", type: "airport", baseline: 9, lat: 47.1532, lon: -1.6108, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-nantes", name: "Nantes", type: "station", baseline: 12, lat: 47.2173, lon: -1.5423, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "bouffay", name: "Bouffay / centre historique", type: "nightlife", baseline: 8, lat: 47.2137, lon: -1.554, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "euronantes", name: "Quartier d'affaires - Euronantes", type: "business", baseline: 7, lat: 47.211, lon: -1.539, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "ile-de-nantes", name: "Île de Nantes / Les Machines", type: "leisure", baseline: 9, lat: 47.207, lon: -1.546, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -254,11 +258,11 @@ const RAW_CITIES = {
     label: "Strasbourg",
     lat: 48.5734, lon: 7.7521,
     zones: [
-      { id: "aeroport-strasbourg", name: "Aéroport de Strasbourg", type: "airport", baseline: 7, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
-      { id: "gare-strasbourg", name: "Strasbourg", type: "station", baseline: 12, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "petite-france", name: "Petite France / centre-ville", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "institutions-europeennes", name: "Quartier des institutions européennes", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "commercial-strasbourg", name: "Zone commerciale", type: "leisure", baseline: 9, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "aeroport-strasbourg", name: "Aéroport de Strasbourg", type: "airport", baseline: 7, lat: 48.5383, lon: 7.6282, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-strasbourg", name: "Strasbourg", type: "station", baseline: 12, lat: 48.5851, lon: 7.7347, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "petite-france", name: "Petite France / centre-ville", type: "nightlife", baseline: 9, lat: 48.581, lon: 7.746, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "institutions-europeennes", name: "Quartier des institutions européennes", type: "business", baseline: 7, lat: 48.596, lon: 7.769, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-strasbourg", name: "Zone commerciale", type: "leisure", baseline: 9, lat: 48.573, lon: 7.75, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -266,11 +270,11 @@ const RAW_CITIES = {
     label: "Bordeaux",
     lat: 44.8378, lon: -0.5792,
     zones: [
-      { id: "aeroport-bordeaux", name: "Aéroport de Bordeaux-Mérignac", type: "airport", baseline: 9, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
-      { id: "gare-bordeaux", name: "Bordeaux Saint-Jean", type: "station", baseline: 12, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "quais-bordeaux", name: "Quais de Bordeaux / centre-ville", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "affaires-bordeaux", name: "Quartier d'affaires", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "cite-du-vin", name: "Cité du Vin / Bassins à flot", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "aeroport-bordeaux", name: "Aéroport de Bordeaux-Mérignac", type: "airport", baseline: 9, lat: 44.8283, lon: -0.7156, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-bordeaux", name: "Bordeaux Saint-Jean", type: "station", baseline: 12, lat: 44.8256, lon: -0.5563, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "quais-bordeaux", name: "Quais de Bordeaux / centre-ville", type: "nightlife", baseline: 9, lat: 44.8407, lon: -0.57, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-bordeaux", name: "Quartier d'affaires", type: "business", baseline: 7, lat: 44.845, lon: -0.56, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "cite-du-vin", name: "Cité du Vin / Bassins à flot", type: "leisure", baseline: 8, lat: 44.8624, lon: -0.551, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -278,11 +282,11 @@ const RAW_CITIES = {
     label: "Lille",
     lat: 50.6292, lon: 3.0573,
     zones: [
-      { id: "aeroport-lille", name: "Aéroport de Lille-Lesquin", type: "airport", baseline: 7, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
-      { id: "gare-lille", name: "Lille Europe", type: "station", baseline: 13, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "vieux-lille", name: "Vieux Lille", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "euralille", name: "Quartier d'affaires - Euralille", type: "business", baseline: 8, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "commercial-lille", name: "Zone commerciale", type: "leisure", baseline: 9, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "aeroport-lille", name: "Aéroport de Lille-Lesquin", type: "airport", baseline: 7, lat: 50.5619, lon: 3.0894, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-lille", name: "Lille Europe", type: "station", baseline: 13, lat: 50.6396, lon: 3.0755, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "vieux-lille", name: "Vieux Lille", type: "nightlife", baseline: 9, lat: 50.6386, lon: 3.062, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "euralille", name: "Quartier d'affaires - Euralille", type: "business", baseline: 8, lat: 50.637, lon: 3.076, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-lille", name: "Zone commerciale", type: "leisure", baseline: 9, lat: 50.627, lon: 3.057, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -290,11 +294,11 @@ const RAW_CITIES = {
     label: "Montpellier",
     lat: 43.6108, lon: 3.8767,
     zones: [
-      { id: "aeroport-montpellier", name: "Aéroport de Montpellier-Méditerranée", type: "airport", baseline: 7, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
-      { id: "gare-montpellier", name: "Montpellier Saint-Roch", type: "station", baseline: 11, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "ecusson", name: "L'Écusson / centre historique", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "antigone", name: "Antigone / quartier d'affaires", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "commercial-montpellier", name: "Zone commerciale", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "aeroport-montpellier", name: "Aéroport de Montpellier-Méditerranée", type: "airport", baseline: 7, lat: 43.5762, lon: 3.963, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-montpellier", name: "Montpellier Saint-Roch", type: "station", baseline: 11, lat: 43.6045, lon: 3.8807, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "ecusson", name: "L'Écusson / centre historique", type: "nightlife", baseline: 9, lat: 43.611, lon: 3.877, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "antigone", name: "Antigone / quartier d'affaires", type: "business", baseline: 7, lat: 43.607, lon: 3.887, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-montpellier", name: "Zone commerciale", type: "leisure", baseline: 8, lat: 43.607, lon: 3.913, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -302,11 +306,11 @@ const RAW_CITIES = {
     label: "Grenoble",
     lat: 45.1885, lon: 5.7245,
     zones: [
-      { id: "aeroport-grenoble", name: "Aéroport Grenoble-Alpes-Isère", type: "airport", baseline: 6, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
-      { id: "gare-grenoble", name: "Grenoble", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "centre-grenoble", name: "Centre-ville", type: "nightlife", baseline: 8, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "presquile", name: "Presqu'île scientifique / affaires", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "commercial-grenoble", name: "Zone commerciale", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "aeroport-grenoble", name: "Aéroport Grenoble-Alpes-Isère", type: "airport", baseline: 6, lat: 45.3629, lon: 5.3294, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-grenoble", name: "Grenoble", type: "station", baseline: 10, lat: 45.1916, lon: 5.7142, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "centre-grenoble", name: "Centre-ville", type: "nightlife", baseline: 8, lat: 45.1885, lon: 5.7245, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "presquile", name: "Presqu'île scientifique / affaires", type: "business", baseline: 7, lat: 45.2015, lon: 5.71, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-grenoble", name: "Zone commerciale", type: "leisure", baseline: 8, lat: 45.17, lon: 5.73, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -314,11 +318,11 @@ const RAW_CITIES = {
     label: "Toulon",
     lat: 43.1242, lon: 5.9280,
     zones: [
-      { id: "aeroport-toulon", name: "Aéroport Toulon-Hyères", type: "airport", baseline: 6, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
-      { id: "gare-toulon", name: "Toulon", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "port-toulon", name: "Centre-ville / port", type: "nightlife", baseline: 8, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "affaires-toulon", name: "Quartier d'affaires", type: "business", baseline: 6, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "commercial-toulon", name: "Zone commerciale", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "aeroport-toulon", name: "Aéroport Toulon-Hyères", type: "airport", baseline: 6, lat: 43.0973, lon: 6.146, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-toulon", name: "Toulon", type: "station", baseline: 10, lat: 43.1249, lon: 5.931, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "port-toulon", name: "Centre-ville / port", type: "nightlife", baseline: 8, lat: 43.1242, lon: 5.928, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-toulon", name: "Quartier d'affaires", type: "business", baseline: 6, lat: 43.13, lon: 5.935, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-toulon", name: "Zone commerciale", type: "leisure", baseline: 8, lat: 43.135, lon: 5.92, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -326,10 +330,10 @@ const RAW_CITIES = {
     label: "Reims",
     lat: 49.2583, lon: 4.0317,
     zones: [
-      { id: "gare-reims", name: "Reims", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "centre-reims", name: "Centre-ville", type: "nightlife", baseline: 8, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "affaires-reims", name: "Quartier d'affaires", type: "business", baseline: 6, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "commercial-reims", name: "Zone commerciale", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "gare-reims", name: "Reims", type: "station", baseline: 10, lat: 49.2603, lon: 4.0245, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "centre-reims", name: "Centre-ville", type: "nightlife", baseline: 8, lat: 49.2583, lon: 4.0317, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-reims", name: "Quartier d'affaires", type: "business", baseline: 6, lat: 49.25, lon: 4.035, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-reims", name: "Zone commerciale", type: "leisure", baseline: 8, lat: 49.245, lon: 4.04, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -337,10 +341,10 @@ const RAW_CITIES = {
     label: "Saint-Étienne",
     lat: 45.4397, lon: 4.3872,
     zones: [
-      { id: "gare-st-etienne", name: "Saint-Étienne Châteaucreux", type: "station", baseline: 9, weekday: STATION_WD, weekend: STATION_WE },
-      { id: "centre-st-etienne", name: "Centre-ville", type: "nightlife", baseline: 7, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
-      { id: "affaires-st-etienne", name: "Quartier d'affaires", type: "business", baseline: 6, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
-      { id: "commercial-st-etienne", name: "Zone commerciale", type: "leisure", baseline: 7, weekday: LEISURE_WD, weekend: LEISURE_WE },
+      { id: "gare-st-etienne", name: "Saint-Étienne Châteaucreux", type: "station", baseline: 9, lat: 45.4406, lon: 4.4046, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "centre-st-etienne", name: "Centre-ville", type: "nightlife", baseline: 7, lat: 45.4397, lon: 4.3872, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-st-etienne", name: "Quartier d'affaires", type: "business", baseline: 6, lat: 45.435, lon: 4.39, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-st-etienne", name: "Zone commerciale", type: "leisure", baseline: 7, lat: 45.43, lon: 4.395, weekday: LEISURE_WD, weekend: LEISURE_WE },
     ],
     events: [],
   },
@@ -420,6 +424,50 @@ function Sparkline({ values, hour }) {
   );
 }
 
+function DemandMap({ zones, center }) {
+  return (
+    <div
+      style={{
+        borderRadius: 14,
+        overflow: "hidden",
+        border: "1px solid #262B2F",
+        marginBottom: 16,
+        height: 260,
+      }}
+    >
+      <MapContainer
+        center={center}
+        zoom={12}
+        style={{ width: "100%", height: "100%", background: "#1D2124" }}
+        scrollWheelZoom={false}
+        key={`${center[0]}-${center[1]}`}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {zones.map((z) => (
+          <CircleMarker
+            key={z.id}
+            center={[z.lat, z.lon]}
+            radius={8 + (z.score / 100) * 10}
+            pathOptions={{
+              color: demandColor(z.score),
+              fillColor: demandColor(z.score),
+              fillOpacity: 0.65,
+              weight: 2,
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -6]}>
+              {z.name} — {z.score}/100
+            </Tooltip>
+          </CircleMarker>
+        ))}
+      </MapContainer>
+    </div>
+  );
+}
+
 export default function App() {
   const now = useMemo(() => new Date(), []);
   const [cityKey, setCityKey] = useState("paris");
@@ -428,6 +476,7 @@ export default function App() {
   const [dayOffset, setDayOffset] = useState(0); // 0 = aujourd'hui, 1 = demain
   const [hour, setHour] = useState(now.getHours());
   const [tab, setTab] = useState("demande");
+  const [demandView, setDemandView] = useState("map"); // "map" | "list"
   const [trafficMode, setTrafficMode] = useState("arrivals"); // "arrivals" | "departures"
   const [liveTraffic, setLiveTraffic] = useState({ status: "idle", trains: [], flights: [], flightsAvailable: true });
 
@@ -714,10 +763,55 @@ export default function App() {
                 </div>
               </div>
 
-              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "0 0 10px" }}>
-                Demande par zone — {city.label}, {dayLabel}
-              </h2>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 10px" }}>
+                <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: 0 }}>
+                  Demande par zone — {city.label}, {dayLabel}
+                </h2>
+                <div style={{ display: "flex", gap: 4, background: "#1D2124", borderRadius: 8, padding: 3, border: "1px solid #262B2F" }}>
+                  <button
+                    onClick={() => setDemandView("map")}
+                    aria-label="Vue carte"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 28,
+                      height: 24,
+                      borderRadius: 6,
+                      border: "none",
+                      background: demandView === "map" ? "rgba(232,147,74,0.15)" : "transparent",
+                      color: demandView === "map" ? "#E8934A" : "#6D757B",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <MapIcon size={14} />
+                  </button>
+                  <button
+                    onClick={() => setDemandView("list")}
+                    aria-label="Vue liste"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 28,
+                      height: 24,
+                      borderRadius: 6,
+                      border: "none",
+                      background: demandView === "list" ? "rgba(232,147,74,0.15)" : "transparent",
+                      color: demandView === "list" ? "#E8934A" : "#6D757B",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <List size={14} />
+                  </button>
+                </div>
+              </div>
 
+              {demandView === "map" && (
+                <DemandMap zones={zonesScored} center={[city.lat, city.lon]} />
+              )}
+
+              {demandView === "list" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {zonesScored.map((z) => {
                   const Icon = ICONS[z.type];
@@ -771,6 +865,7 @@ export default function App() {
                   );
                 })}
               </div>
+              )}
 
               <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
                 <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
