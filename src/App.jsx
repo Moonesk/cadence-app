@@ -1102,9 +1102,6 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: 9, color: "#5B6396", marginTop: -12, marginBottom: 16, textAlign: "right" }}>
-                Photo : pierre9x6 / Pixabay
-              </div>
 
               {/* Prochains repères */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
