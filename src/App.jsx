@@ -926,65 +926,6 @@ export default function App() {
 
         {/* Corps scrollable */}
         <div style={{ flex: 1, overflowY: "auto", padding: "4px 18px 18px" }}>
-          {/* Navigation par cartes colorées */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginBottom: 18 }}>
-            {[
-              { key: "demande", label: "Demande", Icon: MapPin, colors: ["#4C8DFF", "#6F5CFF"] },
-              { key: "arrivees", label: "Trafic", Icon: TrainFront, colors: ["#2FD480", "#19A66A"] },
-              { key: "evenements", label: "Events", Icon: CalendarDays, colors: ["#FF6FA5", "#FF3D7A"] },
-              { key: "planning", label: "Planning", Icon: CalendarClock, colors: ["#FF9F43", "#FF7A3D"] },
-              { key: "alertes", label: "Alertes", Icon: Bell, colors: ["#5B6396", "#3A4578"], badge: hotZones.length },
-            ].map(({ key, label, Icon, colors, badge }) => {
-              const active = tab === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setTab(key)}
-                  style={{
-                    position: "relative",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 5,
-                    padding: "10px 2px",
-                    borderRadius: 14,
-                    border: active ? "2px solid #F3F5FF" : "2px solid transparent",
-                    background: `linear-gradient(150deg, ${colors[0]}, ${colors[1]})`,
-                    cursor: "pointer",
-                    boxShadow: active ? `0 8px 20px -5px ${colors[0]}AA` : `0 4px 12px -6px ${colors[0]}66`,
-                    opacity: active ? 1 : 0.88,
-                  }}
-                >
-                  <Icon size={17} color="#F3F5FF" />
-                  <span style={{ fontSize: 9.5, fontWeight: 600, color: "#F3F5FF" }}>{label}</span>
-                  {badge > 0 && (
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: -4,
-                        right: -2,
-                        background: "#FF5C4A",
-                        color: "#F3F5FF",
-                        borderRadius: 999,
-                        fontSize: 9,
-                        fontWeight: 700,
-                        minWidth: 15,
-                        height: 15,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "0 3px",
-                        border: "2px solid #0B0F24",
-                      }}
-                    >
-                      {badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
           {tab === "demande" && (
             <>
               {/* Profil + statut */}
@@ -1994,6 +1935,74 @@ export default function App() {
               </div>
             </>
           )}
+        </div>
+
+        {/* Navigation par cartes colorées — en bas, plus ergonomique au pouce */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(5, 1fr)",
+            gap: 6,
+            padding: "10px 10px calc(10px + env(safe-area-inset-bottom, 0px))",
+            borderTop: "1px solid #2B3564",
+            background: "#0B0F24",
+          }}
+        >
+          {[
+            { key: "demande", label: "Demande", Icon: MapPin, colors: ["#4C8DFF", "#6F5CFF"] },
+            { key: "arrivees", label: "Trafic", Icon: TrainFront, colors: ["#2FD480", "#19A66A"] },
+            { key: "evenements", label: "Events", Icon: CalendarDays, colors: ["#FF6FA5", "#FF3D7A"] },
+            { key: "planning", label: "Planning", Icon: CalendarClock, colors: ["#FF9F43", "#FF7A3D"] },
+            { key: "alertes", label: "Alertes", Icon: Bell, colors: ["#5B6396", "#3A4578"], badge: hotZones.length },
+          ].map(({ key, label, Icon, colors, badge }) => {
+            const active = tab === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "9px 2px",
+                  borderRadius: 14,
+                  border: active ? "2px solid #F3F5FF" : "2px solid transparent",
+                  background: `linear-gradient(150deg, ${colors[0]}, ${colors[1]})`,
+                  cursor: "pointer",
+                  boxShadow: active ? `0 8px 20px -5px ${colors[0]}AA` : `0 4px 12px -6px ${colors[0]}66`,
+                  opacity: active ? 1 : 0.88,
+                }}
+              >
+                <Icon size={17} color="#F3F5FF" />
+                <span style={{ fontSize: 9.5, fontWeight: 600, color: "#F3F5FF" }}>{label}</span>
+                {badge > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: -4,
+                      right: -2,
+                      background: "#FF5C4A",
+                      color: "#F3F5FF",
+                      borderRadius: 999,
+                      fontSize: 9,
+                      fontWeight: 700,
+                      minWidth: 15,
+                      height: 15,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 3px",
+                      border: "2px solid #0B0F24",
+                    }}
+                  >
+                    {badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Panneau de détail — s'affiche au clic sur une zone (carte ou liste) */}
