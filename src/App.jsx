@@ -17,6 +17,7 @@ import {
   List,
   Map as MapIcon,
   CalendarClock,
+  Clock,
   User,
   Car,
   BarChart3,
@@ -618,6 +619,12 @@ export default function App() {
   const [trafficStartHour, setTrafficStartHour] = useState(0);
   const [trafficEndHour, setTrafficEndHour] = useState(23);
   const [hourZone, setHourZone] = useState(now.getHours()); // heure propre à "Demande par zone"
+  const [liveNow, setLiveNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setLiveNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
   const [liveTraffic, setLiveTraffic] = useState({ status: "idle", trains: [], flights: [], flightsAvailable: true });
 
   const trafficDate = useMemo(() => {
@@ -1017,7 +1024,7 @@ export default function App() {
                   </div>
                   <div>
                     <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15 }}>
-                      {hour < 18 ? "Bonjour" : "Bonsoir"}
+                      {liveNow.getHours() < 18 ? "Bonjour" : "Bonsoir"}
                     </div>
                     <div style={{ fontSize: 11.5, color: "#8A92C2" }}>Bonne route !</div>
                   </div>
@@ -1041,7 +1048,23 @@ export default function App() {
               </div>
 
               {/* Toggle En ligne + ville */}
-              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#4C8DFF",
+                    fontVariantNumeric: "tabular-nums",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Clock size={13} />
+                  {String(liveNow.getHours()).padStart(2, "0")}:{String(liveNow.getMinutes()).padStart(2, "0")}
+                </span>
                 <button
                   onClick={() => setIsOnline((v) => !v)}
                   style={{
