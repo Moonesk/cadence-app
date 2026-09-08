@@ -895,8 +895,8 @@ export default function App() {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {["demande", "planning"].includes(tab) && (
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#8A92C2" }}>
-                  {hourLabel}
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#8A92C2", fontVariantNumeric: "tabular-nums" }}>
+                  {String(liveNow.getHours()).padStart(2, "0")}:{String(liveNow.getMinutes()).padStart(2, "0")}
                 </span>
               )}
               <span
@@ -1048,23 +1048,7 @@ export default function App() {
               </div>
 
               {/* Toggle En ligne + ville */}
-              <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#4C8DFF",
-                    fontVariantNumeric: "tabular-nums",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Clock size={13} />
-                  {String(liveNow.getHours()).padStart(2, "0")}:{String(liveNow.getMinutes()).padStart(2, "0")}
-                </span>
+              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
                 <button
                   onClick={() => setIsOnline((v) => !v)}
                   style={{
