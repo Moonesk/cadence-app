@@ -785,14 +785,14 @@ export default function App() {
               <img
                 src={logoSrc}
                 alt="Cadence"
-                style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0 }}
+                style={{ width: 56, height: 56, borderRadius: 14, flexShrink: 0 }}
               />
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", lineHeight: 1.1 }}>
                 <span
                   style={{
                     fontFamily: "'Space Grotesk', sans-serif",
                     fontWeight: 700,
-                    fontSize: 19,
+                    fontSize: 21,
                     letterSpacing: "-0.01em",
                     background: "linear-gradient(90deg, #F3F5FF, #A9C0FF)",
                     WebkitBackgroundClip: "text",
