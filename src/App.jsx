@@ -49,6 +49,16 @@ const ICONS = {
   leisure: Sparkles,
 };
 
+// Couleur pleine par catégorie — badges vifs façon appli premium,
+// indépendants du score de demande (qui garde son propre dégradé).
+const TYPE_COLORS = {
+  airport: "#4C8DFF", // bleu
+  station: "#2FD480", // vert
+  business: "#8C6FF7", // violet
+  nightlife: "#FF6FA5", // rose
+  leisure: "#FF9F43", // orange
+};
+
 /* ---------------------------------------------------------
    Modèles génériques de pics par type de zone — utilisés pour
    générer rapidement les courbes des nouvelles villes, en
@@ -395,8 +405,8 @@ const CITIES = Object.fromEntries(
    demande) et un ton chaud (forte demande). La couleur
    porte l'information, ce n'est pas une décoration.
 --------------------------------------------------------- */
-const COOL = [62, 142, 138]; // #3E8E8A
-const WARM = [232, 147, 74]; // #E8934A
+const COOL = [47, 212, 128]; // #2FD480 — vert vif, faible demande
+const WARM = [255, 92, 74]; // #FF5C4A — rouge-orangé vif, forte demande
 function demandColor(score) {
   const t = Math.min(1, Math.max(0, score / 100));
   const rgb = COOL.map((c, i) => Math.round(c + (WARM[i] - c) * t));
@@ -494,7 +504,7 @@ function DemandMap({ zones, center, onZoneClick }) {
       style={{
         borderRadius: 14,
         overflow: "hidden",
-        border: "1px solid #262B2F",
+        border: "1px solid #2B3564",
         marginBottom: 16,
         height: 260,
       }}
@@ -502,7 +512,7 @@ function DemandMap({ zones, center, onZoneClick }) {
       <MapContainer
         center={center}
         zoom={12}
-        style={{ width: "100%", height: "100%", background: "#1D2124" }}
+        style={{ width: "100%", height: "100%", background: "#141A38" }}
         scrollWheelZoom={false}
         key={`${center[0]}-${center[1]}`}
       >
@@ -706,7 +716,7 @@ export default function App() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0B0C0D",
+        background: "radial-gradient(circle at 50% 0%, #16204A 0%, #080B1D 60%)",
         display: "flex",
         justifyContent: "center",
         padding: "24px 12px",
@@ -721,14 +731,14 @@ export default function App() {
         input[type="range"] {
           -webkit-appearance: none;
           height: 3px;
-          background: #33393E;
+          background: #3A4578;
           border-radius: 2px;
         }
         input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance: none;
           width: 16px; height: 16px; border-radius: 50%;
-          background: #E8934A;
-          border: 2px solid #14171A;
+          background: #4C8DFF;
+          border: 2px solid #0B0F24;
           cursor: pointer;
           margin-top: -6.5px;
         }
@@ -739,38 +749,62 @@ export default function App() {
         style={{
           width: 390,
           maxWidth: "100%",
-          background: "#14171A",
+          background: "linear-gradient(160deg, #131A3D 0%, #0A0E22 55%, #0B0F24 100%)",
           borderRadius: 28,
-          border: "1px solid #262B2F",
+          border: "1px solid #2B3564",
+          boxShadow: "0 30px 80px -20px rgba(76,141,255,0.25)",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
           minHeight: 720,
-          color: "#EDEFEF",
+          color: "#F3F5FF",
           position: "relative",
         }}
       >
         {/* Header */}
         <div style={{ padding: "20px 18px 12px" }}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <h1
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 700,
-                fontSize: 22,
+                fontSize: 24,
                 margin: 0,
                 letterSpacing: "-0.01em",
+                background: "linear-gradient(90deg, #F3F5FF, #A9C0FF)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
             >
               Cadence
             </h1>
-            {["demande", "planning"].includes(tab) && (
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#9BA3A8" }}>
-                {hourLabel}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {["demande", "planning"].includes(tab) && (
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#8A92C2" }}>
+                  {hourLabel}
+                </span>
+              )}
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#2FD480",
+                  background: "rgba(47,212,128,0.14)",
+                  border: "1px solid rgba(47,212,128,0.3)",
+                  borderRadius: 999,
+                  padding: "4px 9px",
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2FD480" }} />
+                En ligne
               </span>
-            )}
+            </div>
           </div>
-          <p style={{ margin: "2px 0 14px", fontSize: 13, color: "#9BA3A8" }}>
+          <p style={{ margin: "2px 0 14px", fontSize: 13, color: "#8A92C2" }}>
             Où et quand la demande est forte
           </p>
 
@@ -779,7 +813,7 @@ export default function App() {
             <div style={{ position: "relative" }}>
               <Search
                 size={15}
-                color="#6D757B"
+                color="#5B6396"
                 style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}
               />
               <input
@@ -795,9 +829,9 @@ export default function App() {
                   width: "100%",
                   padding: "9px 12px 9px 32px",
                   borderRadius: 10,
-                  border: "1px solid #33393E",
-                  background: "#1D2124",
-                  color: "#EDEFEF",
+                  border: "1px solid #3A4578",
+                  background: "#141A38",
+                  color: "#F3F5FF",
                   fontSize: 13.5,
                   outline: "none",
                 }}
@@ -811,8 +845,8 @@ export default function App() {
                   top: "calc(100% + 6px)",
                   left: 0,
                   right: 0,
-                  background: "#1D2124",
-                  border: "1px solid #33393E",
+                  background: "#141A38",
+                  border: "1px solid #3A4578",
                   borderRadius: 10,
                   overflow: "hidden",
                   zIndex: 5,
@@ -834,7 +868,7 @@ export default function App() {
                         padding: "9px 12px",
                         background: "none",
                         border: "none",
-                        color: "#EDEFEF",
+                        color: "#F3F5FF",
                         fontSize: 13.5,
                         cursor: "pointer",
                       }}
@@ -843,7 +877,7 @@ export default function App() {
                     </button>
                   ))
                 ) : (
-                  <div style={{ padding: "10px 12px", fontSize: 12.5, color: "#9BA3A8" }}>
+                  <div style={{ padding: "10px 12px", fontSize: 12.5, color: "#8A92C2" }}>
                     Cadence n'est pas encore disponible pour « {cityQuery} ». Villes couvertes pour l'instant :{" "}
                     {Object.values(CITIES).map((c) => c.label).join(", ")}.
                   </div>
@@ -857,11 +891,65 @@ export default function App() {
         <div style={{ flex: 1, overflowY: "auto", padding: "4px 18px 18px" }}>
           {tab === "demande" && (
             <>
+              {/* Bannière ville */}
+              <div
+                style={{
+                  position: "relative",
+                  borderRadius: 18,
+                  overflow: "hidden",
+                  marginBottom: 16,
+                  padding: "18px 18px",
+                  background: "linear-gradient(120deg, #24316E 0%, #17204A 55%, #0F1533 100%)",
+                  border: "1px solid #2B3564",
+                }}
+              >
+                <svg
+                  width="180"
+                  height="180"
+                  viewBox="0 0 180 180"
+                  style={{ position: "absolute", top: -40, right: -40, opacity: 0.5 }}
+                >
+                  <circle cx="90" cy="90" r="90" fill="url(#heroGlow)" />
+                  <defs>
+                    <radialGradient id="heroGlow">
+                      <stop offset="0%" stopColor="#4C8DFF" stopOpacity="0.55" />
+                      <stop offset="100%" stopColor="#4C8DFF" stopOpacity="0" />
+                    </radialGradient>
+                  </defs>
+                </svg>
+                <div style={{ position: "relative" }}>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>
+                    {city.label}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "#C7CDF0", marginBottom: 12 }}>
+                    Des courses en toute sérénité
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {["Zones en direct", "Trafic réel", "Événements"].map((t) => (
+                      <span
+                        key={t}
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: 600,
+                          color: "#C7CDF0",
+                          background: "rgba(255,255,255,0.08)",
+                          border: "1px solid rgba(255,255,255,0.14)",
+                          borderRadius: 999,
+                          padding: "4px 9px",
+                        }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Jour + heure */}
               <div
                 style={{
-                  background: "#1D2124",
-                  border: "1px solid #262B2F",
+                  background: "#141A38",
+                  border: "1px solid #2B3564",
                   borderRadius: 14,
                   padding: "14px 16px",
                   marginBottom: 16,
@@ -879,9 +967,9 @@ export default function App() {
                         flex: 1,
                         padding: "7px 0",
                         borderRadius: 8,
-                        border: "1px solid " + (dayOffset === val ? "#E8934A" : "#33393E"),
-                        background: dayOffset === val ? "rgba(232,147,74,0.12)" : "transparent",
-                        color: dayOffset === val ? "#E8934A" : "#9BA3A8",
+                        border: "1px solid " + (dayOffset === val ? "#4C8DFF" : "#3A4578"),
+                        background: dayOffset === val ? "rgba(76,141,255,0.16)" : "transparent",
+                        color: dayOffset === val ? "#4C8DFF" : "#8A92C2",
                         fontSize: 13,
                         fontWeight: 500,
                         cursor: "pointer",
@@ -899,7 +987,7 @@ export default function App() {
                   onChange={(e) => setHour(Number(e.target.value))}
                   style={{ width: "100%" }}
                 />
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#6D757B", marginTop: 4 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#5B6396", marginTop: 4 }}>
                   <span>00:00</span>
                   <span>12:00</span>
                   <span>23:00</span>
@@ -910,7 +998,7 @@ export default function App() {
                 <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: 0 }}>
                   Demande par zone — {city.label}, {dayLabel}
                 </h2>
-                <div style={{ display: "flex", gap: 4, background: "#1D2124", borderRadius: 8, padding: 3, border: "1px solid #262B2F" }}>
+                <div style={{ display: "flex", gap: 4, background: "#141A38", borderRadius: 8, padding: 3, border: "1px solid #2B3564" }}>
                   <button
                     onClick={() => setDemandView("map")}
                     aria-label="Vue carte"
@@ -922,8 +1010,8 @@ export default function App() {
                       height: 24,
                       borderRadius: 6,
                       border: "none",
-                      background: demandView === "map" ? "rgba(232,147,74,0.15)" : "transparent",
-                      color: demandView === "map" ? "#E8934A" : "#6D757B",
+                      background: demandView === "map" ? "rgba(76,141,255,0.18)" : "transparent",
+                      color: demandView === "map" ? "#4C8DFF" : "#5B6396",
                       cursor: "pointer",
                     }}
                   >
@@ -940,8 +1028,8 @@ export default function App() {
                       height: 24,
                       borderRadius: 6,
                       border: "none",
-                      background: demandView === "list" ? "rgba(232,147,74,0.15)" : "transparent",
-                      color: demandView === "list" ? "#E8934A" : "#6D757B",
+                      background: demandView === "list" ? "rgba(76,141,255,0.18)" : "transparent",
+                      color: demandView === "list" ? "#4C8DFF" : "#5B6396",
                       cursor: "pointer",
                     }}
                   >
@@ -963,8 +1051,8 @@ export default function App() {
                       key={z.id}
                       onClick={() => openZoneDetail(z)}
                       style={{
-                        background: "#1D2124",
-                        border: "1px solid #262B2F",
+                        background: "#141A38",
+                        border: "1px solid #2B3564",
                         borderRadius: 14,
                         padding: "12px 14px",
                         display: "flex",
@@ -975,17 +1063,18 @@ export default function App() {
                     >
                       <div
                         style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 10,
-                          background: "#262B2F",
+                          width: 38,
+                          height: 38,
+                          borderRadius: 12,
+                          background: TYPE_COLORS[z.type],
+                          boxShadow: `0 6px 16px -4px ${TYPE_COLORS[z.type]}66`,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           flexShrink: 0,
                         }}
                       >
-                        <Icon size={17} color={demandColor(z.score)} />
+                        <Icon size={18} color="#0B0F24" strokeWidth={2.3} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -1012,9 +1101,9 @@ export default function App() {
               </div>
               )}
 
-              <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
-                <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
-                <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
+              <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#141A38", borderRadius: 10, border: "1px solid #2B3564" }}>
+                <Info size={15} color="#5B6396" style={{ flexShrink: 0, marginTop: 1 }} />
+                <p style={{ margin: 0, fontSize: 11.5, color: "#5B6396", lineHeight: 1.5 }}>
                   Estimations basées sur les tendances horaires typiques de la ville.
                 </p>
               </div>
@@ -1026,7 +1115,7 @@ export default function App() {
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "8px 0 4px" }}>
                 Trafic gare / aéroport — {city.label}
               </h2>
-              <p style={{ fontSize: 12, color: "#9BA3A8", margin: "0 0 12px" }}>
+              <p style={{ fontSize: 12, color: "#8A92C2", margin: "0 0 12px" }}>
                 Arrivées et départs créent de la demande ponctuelle à la gare et à l'aéroport, aujourd'hui.
               </p>
 
@@ -1042,9 +1131,9 @@ export default function App() {
                       flex: 1,
                       padding: "7px 0",
                       borderRadius: 8,
-                      border: "1px solid " + (trafficMode === val ? "#E8934A" : "#33393E"),
-                      background: trafficMode === val ? "rgba(232,147,74,0.12)" : "transparent",
-                      color: trafficMode === val ? "#E8934A" : "#9BA3A8",
+                      border: "1px solid " + (trafficMode === val ? "#4C8DFF" : "#3A4578"),
+                      background: trafficMode === val ? "rgba(76,141,255,0.16)" : "transparent",
+                      color: trafficMode === val ? "#4C8DFF" : "#8A92C2",
                       fontSize: 13,
                       fontWeight: 500,
                       cursor: "pointer",
@@ -1062,13 +1151,13 @@ export default function App() {
                   alignItems: "center",
                   gap: 8,
                   marginBottom: 14,
-                  background: "#1D2124",
-                  border: "1px solid #262B2F",
+                  background: "#141A38",
+                  border: "1px solid #2B3564",
                   borderRadius: 10,
                   padding: "8px 10px",
                 }}
               >
-                <span style={{ fontSize: 12, color: "#9BA3A8", flexShrink: 0 }}>Plage horaire</span>
+                <span style={{ fontSize: 12, color: "#8A92C2", flexShrink: 0 }}>Plage horaire</span>
                 <select
                   value={trafficStartHour}
                   onChange={(e) => setTrafficStartHour(Number(e.target.value))}
@@ -1076,9 +1165,9 @@ export default function App() {
                     flex: 1,
                     padding: "6px 6px",
                     borderRadius: 6,
-                    border: "1px solid #33393E",
-                    background: "#14171A",
-                    color: "#EDEFEF",
+                    border: "1px solid #3A4578",
+                    background: "#0B0F24",
+                    color: "#F3F5FF",
                     fontSize: 12.5,
                   }}
                 >
@@ -1088,7 +1177,7 @@ export default function App() {
                     </option>
                   ))}
                 </select>
-                <span style={{ color: "#6D757B", fontSize: 12.5 }}>à</span>
+                <span style={{ color: "#5B6396", fontSize: 12.5 }}>à</span>
                 <select
                   value={trafficEndHour}
                   onChange={(e) => setTrafficEndHour(Number(e.target.value))}
@@ -1096,9 +1185,9 @@ export default function App() {
                     flex: 1,
                     padding: "6px 6px",
                     borderRadius: 6,
-                    border: "1px solid #33393E",
-                    background: "#14171A",
-                    color: "#EDEFEF",
+                    border: "1px solid #3A4578",
+                    background: "#0B0F24",
+                    color: "#F3F5FF",
                     fontSize: 12.5,
                   }}
                 >
@@ -1117,11 +1206,11 @@ export default function App() {
                     height: 7,
                     borderRadius: "50%",
                     background:
-                      liveTraffic.status === "ready" ? "#3E8E8A" : liveTraffic.status === "error" ? "#D9635A" : "#6D757B",
+                      liveTraffic.status === "ready" ? "#2FD480" : liveTraffic.status === "error" ? "#D9635A" : "#5B6396",
                     flexShrink: 0,
                   }}
                 />
-                <span style={{ fontSize: 11.5, color: "#9BA3A8" }}>
+                <span style={{ fontSize: 11.5, color: "#8A92C2" }}>
                   {liveTraffic.status === "loading" && "Récupération des vraies données…"}
                   {liveTraffic.status === "ready" && "Données en direct (serveur Cadence)"}
                   {liveTraffic.status === "error" && "Serveur injoignable pour le moment"}
@@ -1129,18 +1218,18 @@ export default function App() {
               </div>
 
               {liveTraffic.status === "loading" && (
-                <p style={{ fontSize: 13, color: "#9BA3A8" }}>Chargement des horaires réels…</p>
+                <p style={{ fontSize: 13, color: "#8A92C2" }}>Chargement des horaires réels…</p>
               )}
 
               {liveTraffic.status === "error" && (
                 <div
                   style={{
-                    background: "#1D2124",
-                    border: "1px solid #262B2F",
+                    background: "#141A38",
+                    border: "1px solid #2B3564",
                     borderRadius: 12,
                     padding: "14px",
                     fontSize: 13,
-                    color: "#9BA3A8",
+                    color: "#8A92C2",
                   }}
                 >
                   Impossible de récupérer les horaires pour {city.label} pour le moment. Réessayez dans quelques instants.
@@ -1149,12 +1238,12 @@ export default function App() {
 
               {liveTraffic.status === "ready" && (
                 <>
-                  <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                  <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#8A92C2", margin: "0 0 8px" }}>
                     Trains ({visibleTrains.length})
                   </h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
                     {visibleTrains.length === 0 && (
-                      <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun train sur cette plage horaire.</p>
+                      <p style={{ fontSize: 13, color: "#8A92C2" }}>Aucun train sur cette plage horaire.</p>
                     )}
                     {visibleTrains.map((t, i) => (
                       <div
@@ -1163,32 +1252,32 @@ export default function App() {
                           display: "flex",
                           alignItems: "center",
                           gap: 10,
-                          background: "#1D2124",
-                          border: "1px solid #262B2F",
+                          background: "#141A38",
+                          border: "1px solid #2B3564",
                           borderRadius: 10,
                           padding: "9px 12px",
                         }}
                       >
-                        <TrainFront size={15} color="#3E8E8A" style={{ flexShrink: 0 }} />
+                        <TrainFront size={15} color="#2FD480" style={{ flexShrink: 0 }} />
                         <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>
                           {t.time}
                         </span>
-                        <span style={{ fontSize: 13, color: "#C7CCCF" }}>{t.label}</span>
+                        <span style={{ fontSize: 13, color: "#C7CDF0" }}>{t.label}</span>
                       </div>
                     ))}
                   </div>
 
-                  <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                  <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#8A92C2", margin: "0 0 8px" }}>
                     Vols {liveTraffic.flightsAvailable ? `(${visibleFlights.length})` : ""}
                   </h3>
                   {!liveTraffic.flightsAvailable ? (
-                    <p style={{ fontSize: 13, color: "#9BA3A8" }}>
+                    <p style={{ fontSize: 13, color: "#8A92C2" }}>
                       Pas de grand aéroport desservant directement {city.label}.
                     </p>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {visibleFlights.length === 0 && (
-                        <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun vol sur cette plage horaire.</p>
+                        <p style={{ fontSize: 13, color: "#8A92C2" }}>Aucun vol sur cette plage horaire.</p>
                       )}
                       {visibleFlights.map((f, i) => (
                         <div
@@ -1197,25 +1286,25 @@ export default function App() {
                             display: "flex",
                             alignItems: "center",
                             gap: 10,
-                            background: "#1D2124",
-                            border: "1px solid #262B2F",
+                            background: "#141A38",
+                            border: "1px solid #2B3564",
                             borderRadius: 10,
                             padding: "9px 12px",
                           }}
                         >
-                          <Plane size={15} color="#E8934A" style={{ flexShrink: 0 }} />
+                          <Plane size={15} color="#4C8DFF" style={{ flexShrink: 0 }} />
                           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>
                             {f.time}
                           </span>
-                          <span style={{ fontSize: 13, color: "#C7CCCF" }}>{f.label}</span>
+                          <span style={{ fontSize: 13, color: "#C7CDF0" }}>{f.label}</span>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
-                    <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
-                    <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
+                  <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#141A38", borderRadius: 10, border: "1px solid #2B3564" }}>
+                    <Info size={15} color="#5B6396" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <p style={{ margin: 0, fontSize: 11.5, color: "#5B6396", lineHeight: 1.5 }}>
                       Prochains passages réels à partir de maintenant, récupérés depuis SNCF{liveTraffic.flightsAvailable ? " et AviationStack" : ""}. La plage horaire filtre parmi ce qui reste à venir aujourd'hui.
                     </p>
                   </div>
@@ -1236,11 +1325,11 @@ export default function App() {
                     height: 7,
                     borderRadius: "50%",
                     background:
-                      liveEvents.status === "ready" ? "#3E8E8A" : liveEvents.status === "error" ? "#D9635A" : "#6D757B",
+                      liveEvents.status === "ready" ? "#2FD480" : liveEvents.status === "error" ? "#D9635A" : "#5B6396",
                     flexShrink: 0,
                   }}
                 />
-                <span style={{ fontSize: 11.5, color: "#9BA3A8" }}>
+                <span style={{ fontSize: 11.5, color: "#8A92C2" }}>
                   {liveEvents.status === "loading" && "Récupération des vrais événements…"}
                   {liveEvents.status === "ready" && "Données en direct"}
                   {liveEvents.status === "error" && "Serveur injoignable — exemples affichés"}
@@ -1250,13 +1339,13 @@ export default function App() {
               {liveEvents.status === "ready" && liveEvents.events.length === 0 && (
                 <div
                   style={{
-                    background: "#1D2124",
-                    border: "1px solid #262B2F",
+                    background: "#141A38",
+                    border: "1px solid #2B3564",
                     borderRadius: 12,
                     padding: "14px",
                     marginBottom: 10,
                     fontSize: 13,
-                    color: "#9BA3A8",
+                    color: "#8A92C2",
                   }}
                 >
                   Aucun événement à venir n'est encore publié pour {city.label} sur notre source actuelle. Ce n'est pas un problème technique — les organisateurs ajoutent leurs événements au fil du temps, revenez vérifier plus tard.
@@ -1268,8 +1357,8 @@ export default function App() {
                   <div
                     key={i}
                     style={{
-                      background: "#1D2124",
-                      border: "1px solid #262B2F",
+                      background: "#141A38",
+                      border: "1px solid #2B3564",
                       borderRadius: 14,
                       padding: "13px 14px",
                     }}
@@ -1282,25 +1371,25 @@ export default function App() {
                           padding: "2px 8px",
                           borderRadius: 999,
                           flexShrink: 0,
-                          color: "#3E8E8A",
+                          color: "#2FD480",
                           background: "rgba(62,142,138,0.14)",
                         }}
                       >
                         {ev.category || ev.impact || "Événement"}
                       </span>
                     </div>
-                    <div style={{ fontSize: 12.5, color: "#9BA3A8", marginTop: 6 }}>
+                    <div style={{ fontSize: 12.5, color: "#8A92C2", marginTop: 6 }}>
                       {ev.date} {ev.time ? `· ${ev.time}` : ""}
                     </div>
-                    <div style={{ fontSize: 12.5, color: "#9BA3A8", marginTop: 2 }}>
+                    <div style={{ fontSize: 12.5, color: "#8A92C2", marginTop: 2 }}>
                       {ev.venue || ev.zone}
                     </div>
                   </div>
                 ))}
               </div>
-              <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
-                <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
-                <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
+              <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#141A38", borderRadius: 10, border: "1px solid #2B3564" }}>
+                <Info size={15} color="#5B6396" style={{ flexShrink: 0, marginTop: 1 }} />
+                <p style={{ margin: 0, fontSize: 11.5, color: "#5B6396", lineHeight: 1.5 }}>
                   {liveEvents.status === "ready"
                     ? "Concerts, sport, théâtre et festivals à venir, récupérés via Ticketmaster."
                     : "Exemples affichés en secours (serveur relais indisponible pour le moment)."}
@@ -1314,7 +1403,7 @@ export default function App() {
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "8px 0 4px" }}>
                 Mon planning optimal — {city.label}
               </h2>
-              <p style={{ fontSize: 12, color: "#9BA3A8", margin: "0 0 14px" }}>
+              <p style={{ fontSize: 12, color: "#8A92C2", margin: "0 0 14px" }}>
                 Activez vos jours travaillés et réglez vos horaires pour chacun — l'appli vous dit où vous positionner.
               </p>
 
@@ -1329,8 +1418,8 @@ export default function App() {
                     <div
                       key={d.key}
                       style={{
-                        background: "#1D2124",
-                        border: "1px solid " + (daySchedule.enabled ? "#262B2F" : "#1D2124"),
+                        background: "#141A38",
+                        border: "1px solid " + (daySchedule.enabled ? "#2B3564" : "#141A38"),
                         borderRadius: 14,
                         padding: "12px 14px",
                         opacity: daySchedule.enabled ? 1 : 0.6,
@@ -1352,7 +1441,7 @@ export default function App() {
                             height: 22,
                             borderRadius: 999,
                             border: "none",
-                            background: daySchedule.enabled ? "#E8934A" : "#33393E",
+                            background: daySchedule.enabled ? "#4C8DFF" : "#3A4578",
                             position: "relative",
                             cursor: "pointer",
                             flexShrink: 0,
@@ -1367,7 +1456,7 @@ export default function App() {
                               width: 16,
                               height: 16,
                               borderRadius: "50%",
-                              background: "#14171A",
+                              background: "#0B0F24",
                               transition: "left .15s ease",
                             }}
                           />
@@ -1389,9 +1478,9 @@ export default function App() {
                                 flex: 1,
                                 padding: "7px 6px",
                                 borderRadius: 8,
-                                border: "1px solid #33393E",
-                                background: "#14171A",
-                                color: "#EDEFEF",
+                                border: "1px solid #3A4578",
+                                background: "#0B0F24",
+                                color: "#F3F5FF",
                                 fontSize: 12.5,
                               }}
                             >
@@ -1401,7 +1490,7 @@ export default function App() {
                                 </option>
                               ))}
                             </select>
-                            <span style={{ color: "#6D757B", fontSize: 12.5 }}>à</span>
+                            <span style={{ color: "#5B6396", fontSize: 12.5 }}>à</span>
                             <select
                               value={daySchedule.end}
                               onChange={(e) =>
@@ -1414,9 +1503,9 @@ export default function App() {
                                 flex: 1,
                                 padding: "7px 6px",
                                 borderRadius: 8,
-                                border: "1px solid #33393E",
-                                background: "#14171A",
-                                color: "#EDEFEF",
+                                border: "1px solid #3A4578",
+                                background: "#0B0F24",
+                                color: "#F3F5FF",
                                 fontSize: 12.5,
                               }}
                             >
@@ -1437,7 +1526,7 @@ export default function App() {
                                     style={{
                                       fontFamily: "'Space Grotesk', sans-serif",
                                       fontSize: 12,
-                                      color: "#9BA3A8",
+                                      color: "#8A92C2",
                                       width: 78,
                                       flexShrink: 0,
                                     }}
@@ -1470,9 +1559,9 @@ export default function App() {
                 })}
               </div>
 
-              <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
-                <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
-                <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
+              <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#141A38", borderRadius: 10, border: "1px solid #2B3564" }}>
+                <Info size={15} color="#5B6396" style={{ flexShrink: 0, marginTop: 1 }} />
+                <p style={{ margin: 0, fontSize: 11.5, color: "#5B6396", lineHeight: 1.5 }}>
                   Calculé à partir des tendances horaires habituelles de {city.label}.
                 </p>
               </div>
@@ -1485,7 +1574,7 @@ export default function App() {
                 {dayLabel === "aujourd'hui" ? "Maintenant" : "Demain"} — {city.label}, {hourLabel}
               </h2>
               {hotZones.length === 0 && (
-                <p style={{ fontSize: 13, color: "#9BA3A8" }}>
+                <p style={{ fontSize: 13, color: "#8A92C2" }}>
                   Aucune zone en forte demande à cette heure pour {city.label}.
                 </p>
               )}
@@ -1494,8 +1583,8 @@ export default function App() {
                   <div
                     key={z.id}
                     style={{
-                      background: "#1D2124",
-                      border: "1px solid #262B2F",
+                      background: "#141A38",
+                      border: "1px solid #2B3564",
                       borderLeft: "3px solid " + demandColor(z.score),
                       borderRadius: 10,
                       padding: "11px 14px",
@@ -1515,9 +1604,9 @@ export default function App() {
                   <div
                     key={i}
                     style={{
-                      background: "#1D2124",
-                      border: "1px solid #262B2F",
-                      borderLeft: "3px solid #E8934A",
+                      background: "#141A38",
+                      border: "1px solid #2B3564",
+                      borderLeft: "3px solid #4C8DFF",
                       borderRadius: 10,
                       padding: "11px 14px",
                       fontSize: 13.5,
@@ -1535,9 +1624,9 @@ export default function App() {
         <div
           style={{
             display: "flex",
-            borderTop: "1px solid #262B2F",
-            padding: "10px 8px calc(10px + env(safe-area-inset-bottom, 0px))",
-            background: "#14171A",
+            borderTop: "1px solid #2B3564",
+            padding: "10px 6px calc(10px + env(safe-area-inset-bottom, 0px))",
+            background: "#0B0F24",
           }}
         >
           {[
@@ -1546,50 +1635,67 @@ export default function App() {
             { key: "evenements", label: "Événements", Icon: CalendarDays },
             { key: "planning", label: "Planning", Icon: CalendarClock },
             { key: "alertes", label: "Alertes", Icon: Bell, badge: hotZones.length },
-          ].map(({ key, label, Icon, badge }) => (
-            <button
-              key={key}
-              className="navbtn"
-              onClick={() => setTab(key)}
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 4,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: tab === key ? "#E8934A" : "#6D757B",
-                position: "relative",
-              }}
-            >
-              <Icon size={19} />
-              <span style={{ fontSize: 10.5 }}>{label}</span>
-              {badge > 0 && (
-                <span
+          ].map(({ key, label, Icon, badge }) => {
+            const active = tab === key;
+            return (
+              <button
+                key={key}
+                className="navbtn"
+                onClick={() => setTab(key)}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: active ? "#F3F5FF" : "#5B6396",
+                  position: "relative",
+                  padding: "2px 0",
+                }}
+              >
+                <div
                   style={{
-                    position: "absolute",
-                    top: -2,
-                    right: "28%",
-                    background: "#E8934A",
-                    color: "#14171A",
+                    width: 40,
+                    height: 26,
                     borderRadius: 999,
-                    fontSize: 9.5,
-                    fontWeight: 700,
-                    minWidth: 14,
-                    height: 14,
+                    background: active ? "linear-gradient(135deg, #4C8DFF, #6F5CFF)" : "transparent",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    padding: "0 3px",
+                    boxShadow: active ? "0 4px 14px -3px rgba(76,141,255,0.55)" : "none",
                   }}
                 >
-                  {badge}
-                </span>
-              )}
-            </button>
-          ))}
+                  <Icon size={17} />
+                </div>
+                <span style={{ fontSize: 10.5, fontWeight: active ? 600 : 400 }}>{label}</span>
+                {badge > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: -2,
+                      right: "22%",
+                      background: "#FF5C4A",
+                      color: "#F3F5FF",
+                      borderRadius: 999,
+                      fontSize: 9.5,
+                      fontWeight: 700,
+                      minWidth: 14,
+                      height: 14,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 3px",
+                    }}
+                  >
+                    {badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Panneau de détail — s'affiche au clic sur une zone (carte ou liste) */}
@@ -1610,19 +1716,34 @@ export default function App() {
               style={{
                 width: "100%",
                 maxHeight: "78%",
-                background: "#1D2124",
+                background: "#141A38",
                 borderTopLeftRadius: 20,
                 borderTopRightRadius: 20,
-                border: "1px solid #262B2F",
+                border: "1px solid #2B3564",
                 padding: "16px 18px calc(16px + env(safe-area-inset-bottom, 0px))",
                 overflowY: "auto",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   {(() => {
                     const Icon = ICONS[selectedZone.type];
-                    return <Icon size={17} color={demandColor(selectedZone.score)} />;
+                    return (
+                      <div
+                        style={{
+                          width: 30,
+                          height: 30,
+                          borderRadius: 9,
+                          background: TYPE_COLORS[selectedZone.type],
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon size={16} color="#0B0F24" strokeWidth={2.3} />
+                      </div>
+                    );
                   })()}
                   <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 15 }}>
                     {selectedZone.name}
@@ -1630,37 +1751,37 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => setSelectedZone(null)}
-                  style={{ background: "none", border: "none", color: "#6D757B", fontSize: 20, cursor: "pointer", padding: 4 }}
+                  style={{ background: "none", border: "none", color: "#5B6396", fontSize: 20, cursor: "pointer", padding: 4 }}
                   aria-label="Fermer"
                 >
                   ×
                 </button>
               </div>
-              <p style={{ fontSize: 12, color: "#9BA3A8", margin: "0 0 14px" }}>
+              <p style={{ fontSize: 12, color: "#8A92C2", margin: "0 0 14px" }}>
                 Autour de {formatHour(hour)}, {dayLabel} — score {selectedZone.score}/100
               </p>
 
               {zoneDetail.status === "loading" && (
-                <p style={{ fontSize: 13, color: "#9BA3A8" }}>Récupération des infos…</p>
+                <p style={{ fontSize: 13, color: "#8A92C2" }}>Récupération des infos…</p>
               )}
               {zoneDetail.status === "error" && (
-                <p style={{ fontSize: 13, color: "#9BA3A8" }}>Impossible de récupérer les infos pour le moment.</p>
+                <p style={{ fontSize: 13, color: "#8A92C2" }}>Impossible de récupérer les infos pour le moment.</p>
               )}
 
               {zoneDetail.status === "ready" && selectedZone.type === "airport" && (
                 <>
-                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#8A92C2", margin: "0 0 8px" }}>
                     Vols autour de cette heure
                   </h4>
                   {zoneDetail.flights.length === 0 ? (
-                    <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun vol proche de cette heure.</p>
+                    <p style={{ fontSize: 13, color: "#8A92C2" }}>Aucun vol proche de cette heure.</p>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {zoneDetail.flights.map((f, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "#14171A", border: "1px solid #262B2F", borderRadius: 10, padding: "9px 12px" }}>
-                          <Plane size={14} color="#E8934A" style={{ flexShrink: 0 }} />
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0B0F24", border: "1px solid #2B3564", borderRadius: 10, padding: "9px 12px" }}>
+                          <Plane size={14} color="#4C8DFF" style={{ flexShrink: 0 }} />
                           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>{f.time}</span>
-                          <span style={{ fontSize: 13, color: "#C7CCCF" }}>{f.label}</span>
+                          <span style={{ fontSize: 13, color: "#C7CDF0" }}>{f.label}</span>
                         </div>
                       ))}
                     </div>
@@ -1670,18 +1791,18 @@ export default function App() {
 
               {zoneDetail.status === "ready" && selectedZone.type === "station" && (
                 <>
-                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#8A92C2", margin: "0 0 8px" }}>
                     Trains autour de cette heure
                   </h4>
                   {zoneDetail.trains.length === 0 ? (
-                    <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun train proche de cette heure.</p>
+                    <p style={{ fontSize: 13, color: "#8A92C2" }}>Aucun train proche de cette heure.</p>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {zoneDetail.trains.map((t, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "#14171A", border: "1px solid #262B2F", borderRadius: 10, padding: "9px 12px" }}>
-                          <TrainFront size={14} color="#3E8E8A" style={{ flexShrink: 0 }} />
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0B0F24", border: "1px solid #2B3564", borderRadius: 10, padding: "9px 12px" }}>
+                          <TrainFront size={14} color="#2FD480" style={{ flexShrink: 0 }} />
                           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>{t.time}</span>
-                          <span style={{ fontSize: 13, color: "#C7CCCF" }}>{t.label}</span>
+                          <span style={{ fontSize: 13, color: "#C7CDF0" }}>{t.label}</span>
                         </div>
                       ))}
                     </div>
@@ -1691,17 +1812,17 @@ export default function App() {
 
               {zoneDetail.status === "ready" && !["airport", "station"].includes(selectedZone.type) && (
                 <>
-                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#8A92C2", margin: "0 0 8px" }}>
                     Événements du jour à proximité
                   </h4>
                   {zoneDetail.events.length === 0 ? (
-                    <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun événement recensé pour l'instant.</p>
+                    <p style={{ fontSize: 13, color: "#8A92C2" }}>Aucun événement recensé pour l'instant.</p>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {zoneDetail.events.slice(0, 6).map((ev, i) => (
-                        <div key={i} style={{ background: "#14171A", border: "1px solid #262B2F", borderRadius: 10, padding: "9px 12px" }}>
+                        <div key={i} style={{ background: "#0B0F24", border: "1px solid #2B3564", borderRadius: 10, padding: "9px 12px" }}>
                           <div style={{ fontSize: 13, fontWeight: 500 }}>{ev.name}</div>
-                          <div style={{ fontSize: 11.5, color: "#9BA3A8", marginTop: 2 }}>
+                          <div style={{ fontSize: 11.5, color: "#8A92C2", marginTop: 2 }}>
                             {ev.date} {ev.time ? `· ${ev.time}` : ""} — {ev.venue}
                           </div>
                         </div>
