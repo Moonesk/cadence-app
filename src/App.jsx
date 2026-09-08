@@ -1020,36 +1020,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Cartes rapides */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 18 }}>
-                {[
-                  { label: "Trafic", Icon: TrainFront, colors: ["#4C8DFF", "#6F5CFF"], action: () => setTab("arrivees") },
-                  { label: "Carte", Icon: MapIcon, colors: ["#2FD480", "#19A66A"], action: () => { setTab("demande"); setDemandView("map"); } },
-                  { label: "Planning", Icon: BarChart3, colors: ["#FF9F43", "#FF7A3D"], action: () => setTab("planning") },
-                  { label: "Alertes", Icon: Settings, colors: ["#5B6396", "#3A4578"], action: () => setTab("alertes") },
-                ].map(({ label, Icon, colors, action }) => (
-                  <button
-                    key={label}
-                    onClick={action}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "12px 4px",
-                      borderRadius: 14,
-                      border: "none",
-                      background: `linear-gradient(150deg, ${colors[0]}, ${colors[1]})`,
-                      cursor: "pointer",
-                      boxShadow: `0 8px 18px -6px ${colors[0]}88`,
-                    }}
-                  >
-                    <Icon size={18} color="#F3F5FF" />
-                    <span style={{ fontSize: 10, fontWeight: 600, color: "#F3F5FF" }}>{label}</span>
-                  </button>
-                ))}
-              </div>
-
               {/* Bannière ville */}
               <div
                 style={{
