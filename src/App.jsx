@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { MapContainer, TileLayer, CircleMarker, Tooltip, AttributionControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import logoSrc from "./assets/logo.png";
+import bannerSrc from "./assets/banner-city.jpg";
 import {
   MapPin,
   CalendarDays,
@@ -1073,26 +1074,22 @@ export default function App() {
                   borderRadius: 18,
                   overflow: "hidden",
                   marginBottom: 16,
-                  padding: "18px 18px",
-                  background: "linear-gradient(120deg, #24316E 0%, #17204A 55%, #0F1533 100%)",
+                  minHeight: 140,
                   border: "1px solid #2B3564",
+                  backgroundImage: `url(${bannerSrc})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center 60%",
                 }}
               >
-                <svg
-                  width="180"
-                  height="180"
-                  viewBox="0 0 180 180"
-                  style={{ position: "absolute", top: -40, right: -40, opacity: 0.5 }}
-                >
-                  <circle cx="90" cy="90" r="90" fill="url(#heroGlow)" />
-                  <defs>
-                    <radialGradient id="heroGlow">
-                      <stop offset="0%" stopColor="#4C8DFF" stopOpacity="0.55" />
-                      <stop offset="100%" stopColor="#4C8DFF" stopOpacity="0" />
-                    </radialGradient>
-                  </defs>
-                </svg>
-                <div style={{ position: "relative" }}>
+                {/* Voile sombre pour garder le texte lisible sur la photo */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "linear-gradient(180deg, rgba(11,15,36,0.35) 0%, rgba(11,15,36,0.55) 55%, rgba(11,15,36,0.88) 100%)",
+                  }}
+                />
+                <div style={{ position: "relative", padding: "18px 18px" }}>
                   <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>
                     {city.label}
                   </div>
@@ -1104,6 +1101,9 @@ export default function App() {
                     <span style={{ fontSize: 11, color: "#C7CDF0" }}>Sécurité • Confort • Satisfaction</span>
                   </div>
                 </div>
+              </div>
+              <div style={{ fontSize: 9, color: "#5B6396", marginTop: -12, marginBottom: 16, textAlign: "right" }}>
+                Photo : pierre9x6 / Pixabay
               </div>
 
               {/* Prochains repères */}
