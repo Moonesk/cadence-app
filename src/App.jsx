@@ -732,7 +732,7 @@ export default function App() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100dvh",
         background: "radial-gradient(circle at 50% 0%, #16204A 0%, #080B1D 60%)",
         display: "flex",
         justifyContent: "center",
@@ -773,7 +773,7 @@ export default function App() {
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          minHeight: 720,
+          height: "100%",
           color: "#F3F5FF",
           position: "relative",
         }}
