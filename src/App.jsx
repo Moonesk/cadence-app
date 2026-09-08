@@ -38,11 +38,27 @@ function buildCurve(peaks, baseline) {
 
 const ICONS = {
   airport: Plane,
-  station: TrainFront,
   business: Building2,
+  station: TrainFront,
   nightlife: PartyPopper,
   leisure: Sparkles,
 };
+
+/* ---------------------------------------------------------
+   Modèles génériques de pics par type de zone — utilisés pour
+   générer rapidement les courbes des nouvelles villes, en
+   attendant un éventuel réglage fin ville par ville.
+--------------------------------------------------------- */
+const AIRPORT_WD = [{ c: 6, w: 1.4, h: 48 }, { c: 21, w: 1.4, h: 50 }];
+const AIRPORT_WE = [{ c: 7, w: 1.6, h: 40 }, { c: 21, w: 1.6, h: 42 }];
+const STATION_WD = [{ c: 8, w: 1, h: 62 }, { c: 18, w: 1, h: 58 }];
+const STATION_WE = [{ c: 11, w: 2, h: 34 }];
+const BUSINESS_WD = [{ c: 8, w: 1, h: 55 }, { c: 18, w: 1, h: 55 }];
+const BUSINESS_WE = [{ c: 14, w: 3, h: 12 }];
+const NIGHTLIFE_WD = [{ c: 23, w: 1.4, h: 32 }];
+const NIGHTLIFE_WE = [{ c: 23, w: 1.8, h: 75 }, { c: 1, w: 1.4, h: 52 }];
+const LEISURE_WD = [{ c: 13, w: 2, h: 28 }, { c: 19, w: 2, h: 28 }];
+const LEISURE_WE = [{ c: 15, w: 3, h: 46 }];
 
 /* ---------------------------------------------------------
    Données des villes (démo — logique horaire, pas de flux
@@ -180,6 +196,154 @@ const RAW_CITIES = {
       { name: "Concert au Liberté", date: "ven. 25 sept. 2026", time: "20h00", zone: "Centre-ville", impact: "Moyen" },
     ],
   },
+  nice: {
+    label: "Nice",
+    lat: 43.7102, lon: 7.2620,
+    zones: [
+      { id: "aeroport-nice", name: "Aéroport Nice Côte d'Azur", type: "airport", baseline: 11, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-nice", name: "Nice Ville", type: "station", baseline: 12, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "vieux-nice", name: "Vieux Nice / Promenade des Anglais", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-nice", name: "Quartier d'affaires", type: "business", baseline: 6, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-nice", name: "Nice Étoile / centre commercial", type: "leisure", baseline: 10, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  cannes: {
+    label: "Cannes",
+    lat: 43.5528, lon: 7.0174,
+    zones: [
+      { id: "gare-cannes", name: "Cannes", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "croisette", name: "La Croisette", type: "nightlife", baseline: 11, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "palais-festivals", name: "Palais des Festivals", type: "leisure", baseline: 10, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  antibes: {
+    label: "Antibes",
+    lat: 43.5804, lon: 7.1251,
+    zones: [
+      { id: "gare-antibes", name: "Antibes", type: "station", baseline: 9, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "vieil-antibes", name: "Vieil Antibes / Port Vauban", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "bord-de-mer-antibes", name: "Bord de mer / Marineland", type: "leisure", baseline: 9, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  monaco: {
+    label: "Monaco",
+    lat: 43.7384, lon: 7.4246,
+    zones: [
+      { id: "gare-monaco", name: "Monaco-Monte-Carlo", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "monte-carlo", name: "Monte-Carlo / Casino", type: "nightlife", baseline: 13, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "port-hercule", name: "Port Hercule / Fontvieille", type: "business", baseline: 9, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+    ],
+    events: [],
+  },
+  nantes: {
+    label: "Nantes",
+    lat: 47.2184, lon: -1.5536,
+    zones: [
+      { id: "aeroport-nantes", name: "Aéroport Nantes Atlantique", type: "airport", baseline: 9, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-nantes", name: "Nantes", type: "station", baseline: 12, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "bouffay", name: "Bouffay / centre historique", type: "nightlife", baseline: 8, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "euronantes", name: "Quartier d'affaires - Euronantes", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "ile-de-nantes", name: "Île de Nantes / Les Machines", type: "leisure", baseline: 9, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  strasbourg: {
+    label: "Strasbourg",
+    lat: 48.5734, lon: 7.7521,
+    zones: [
+      { id: "aeroport-strasbourg", name: "Aéroport de Strasbourg", type: "airport", baseline: 7, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-strasbourg", name: "Strasbourg", type: "station", baseline: 12, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "petite-france", name: "Petite France / centre-ville", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "institutions-europeennes", name: "Quartier des institutions européennes", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-strasbourg", name: "Zone commerciale", type: "leisure", baseline: 9, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  bordeaux: {
+    label: "Bordeaux",
+    lat: 44.8378, lon: -0.5792,
+    zones: [
+      { id: "aeroport-bordeaux", name: "Aéroport de Bordeaux-Mérignac", type: "airport", baseline: 9, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-bordeaux", name: "Bordeaux Saint-Jean", type: "station", baseline: 12, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "quais-bordeaux", name: "Quais de Bordeaux / centre-ville", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-bordeaux", name: "Quartier d'affaires", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "cite-du-vin", name: "Cité du Vin / Bassins à flot", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  lille: {
+    label: "Lille",
+    lat: 50.6292, lon: 3.0573,
+    zones: [
+      { id: "aeroport-lille", name: "Aéroport de Lille-Lesquin", type: "airport", baseline: 7, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-lille", name: "Lille Europe", type: "station", baseline: 13, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "vieux-lille", name: "Vieux Lille", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "euralille", name: "Quartier d'affaires - Euralille", type: "business", baseline: 8, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-lille", name: "Zone commerciale", type: "leisure", baseline: 9, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  montpellier: {
+    label: "Montpellier",
+    lat: 43.6108, lon: 3.8767,
+    zones: [
+      { id: "aeroport-montpellier", name: "Aéroport de Montpellier-Méditerranée", type: "airport", baseline: 7, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-montpellier", name: "Montpellier Saint-Roch", type: "station", baseline: 11, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "ecusson", name: "L'Écusson / centre historique", type: "nightlife", baseline: 9, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "antigone", name: "Antigone / quartier d'affaires", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-montpellier", name: "Zone commerciale", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  grenoble: {
+    label: "Grenoble",
+    lat: 45.1885, lon: 5.7245,
+    zones: [
+      { id: "aeroport-grenoble", name: "Aéroport Grenoble-Alpes-Isère", type: "airport", baseline: 6, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-grenoble", name: "Grenoble", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "centre-grenoble", name: "Centre-ville", type: "nightlife", baseline: 8, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "presquile", name: "Presqu'île scientifique / affaires", type: "business", baseline: 7, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-grenoble", name: "Zone commerciale", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  toulon: {
+    label: "Toulon",
+    lat: 43.1242, lon: 5.9280,
+    zones: [
+      { id: "aeroport-toulon", name: "Aéroport Toulon-Hyères", type: "airport", baseline: 6, weekday: AIRPORT_WD, weekend: AIRPORT_WE },
+      { id: "gare-toulon", name: "Toulon", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "port-toulon", name: "Centre-ville / port", type: "nightlife", baseline: 8, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-toulon", name: "Quartier d'affaires", type: "business", baseline: 6, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-toulon", name: "Zone commerciale", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  reims: {
+    label: "Reims",
+    lat: 49.2583, lon: 4.0317,
+    zones: [
+      { id: "gare-reims", name: "Reims", type: "station", baseline: 10, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "centre-reims", name: "Centre-ville", type: "nightlife", baseline: 8, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-reims", name: "Quartier d'affaires", type: "business", baseline: 6, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-reims", name: "Zone commerciale", type: "leisure", baseline: 8, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
+  "saint-etienne": {
+    label: "Saint-Étienne",
+    lat: 45.4397, lon: 4.3872,
+    zones: [
+      { id: "gare-st-etienne", name: "Saint-Étienne Châteaucreux", type: "station", baseline: 9, weekday: STATION_WD, weekend: STATION_WE },
+      { id: "centre-st-etienne", name: "Centre-ville", type: "nightlife", baseline: 7, weekday: NIGHTLIFE_WD, weekend: NIGHTLIFE_WE },
+      { id: "affaires-st-etienne", name: "Quartier d'affaires", type: "business", baseline: 6, weekday: BUSINESS_WD, weekend: BUSINESS_WE },
+      { id: "commercial-st-etienne", name: "Zone commerciale", type: "leisure", baseline: 7, weekday: LEISURE_WD, weekend: LEISURE_WE },
+    ],
+    events: [],
+  },
 };
 
 // URL de votre serveur relais déployé sur Render
@@ -192,151 +356,21 @@ const STATION_NAMES = {
   marseille: "Marseille Saint-Charles",
   toulouse: "Toulouse Matabiau",
   rennes: "Rennes",
+  nice: "Nice Ville",
+  cannes: "Cannes",
+  antibes: "Antibes",
+  monaco: "Monaco-Monte-Carlo",
+  nantes: "Nantes",
+  strasbourg: "Strasbourg",
+  bordeaux: "Bordeaux Saint-Jean",
+  lille: "Lille Europe",
+  montpellier: "Montpellier Saint-Roch",
+  grenoble: "Grenoble",
+  toulon: "Toulon",
+  reims: "Reims",
+  "saint-etienne": "Saint-Étienne Châteaucreux",
 };
 
-// Précalcul des courbes (semaine / week-end) une seule fois
-const ARRIVALS = {
-  paris: {
-    trainsArr: [
-      { time: "06:52", label: "TGV en provenance de Marseille" },
-      { time: "08:15", label: "TGV en provenance de Lyon" },
-      { time: "09:40", label: "Eurostar en provenance de Londres" },
-      { time: "12:05", label: "TGV en provenance de Bordeaux" },
-      { time: "17:30", label: "TGV en provenance de Lille" },
-      { time: "20:10", label: "TGV en provenance de Strasbourg" },
-    ],
-    trainsDep: [
-      { time: "07:05", label: "TGV à destination de Lyon" },
-      { time: "09:35", label: "Eurostar à destination de Londres" },
-      { time: "11:20", label: "TGV à destination de Marseille" },
-      { time: "16:05", label: "TGV à destination de Rennes" },
-      { time: "18:45", label: "TGV à destination de Bordeaux" },
-      { time: "21:15", label: "TGV à destination de Strasbourg" },
-    ],
-    flightsArr: [
-      { time: "07:20", label: "Vol en provenance de New York JFK" },
-      { time: "10:45", label: "Vol en provenance de Casablanca" },
-      { time: "14:30", label: "Vol en provenance de Tokyo Haneda" },
-      { time: "19:05", label: "Vol en provenance de Rome Fiumicino" },
-      { time: "22:40", label: "Vol en provenance de Dubaï" },
-    ],
-    flightsDep: [
-      { time: "08:10", label: "Vol à destination de Casablanca" },
-      { time: "12:00", label: "Vol à destination de Rome Fiumicino" },
-      { time: "16:25", label: "Vol à destination de Dubaï" },
-      { time: "21:15", label: "Vol à destination de New York JFK" },
-    ],
-  },
-  lyon: {
-    trainsArr: [
-      { time: "07:10", label: "TGV en provenance de Paris" },
-      { time: "09:35", label: "TGV en provenance de Marseille" },
-      { time: "13:00", label: "TGV en provenance de Genève" },
-      { time: "16:45", label: "TGV en provenance de Bordeaux" },
-      { time: "19:20", label: "TGV en provenance de Paris" },
-    ],
-    trainsDep: [
-      { time: "07:45", label: "TGV à destination de Marseille" },
-      { time: "10:20", label: "TGV à destination de Paris" },
-      { time: "14:05", label: "TGV à destination de Genève" },
-      { time: "18:00", label: "TGV à destination de Paris" },
-      { time: "20:30", label: "TGV à destination de Bordeaux" },
-    ],
-    flightsArr: [
-      { time: "08:05", label: "Vol en provenance d'Alger" },
-      { time: "11:30", label: "Vol en provenance de Londres" },
-      { time: "15:50", label: "Vol en provenance de Porto" },
-      { time: "20:15", label: "Vol en provenance de Tunis" },
-    ],
-    flightsDep: [
-      { time: "09:00", label: "Vol à destination de Londres" },
-      { time: "13:15", label: "Vol à destination d'Alger" },
-      { time: "17:40", label: "Vol à destination de Tunis" },
-      { time: "21:20", label: "Vol à destination de Porto" },
-    ],
-  },
-  marseille: {
-    trainsArr: [
-      { time: "06:58", label: "TGV en provenance de Paris" },
-      { time: "10:20", label: "TGV en provenance de Lyon" },
-      { time: "13:45", label: "TGV en provenance de Nice" },
-      { time: "17:10", label: "TGV en provenance de Paris" },
-      { time: "21:00", label: "TER en provenance d'Avignon" },
-    ],
-    trainsDep: [
-      { time: "07:30", label: "TGV à destination de Nice" },
-      { time: "10:50", label: "TGV à destination de Paris" },
-      { time: "14:20", label: "TGV à destination de Lyon" },
-      { time: "18:00", label: "TGV à destination de Paris" },
-      { time: "21:30", label: "TER à destination d'Avignon" },
-    ],
-    flightsArr: [
-      { time: "07:40", label: "Vol en provenance d'Alger" },
-      { time: "12:10", label: "Vol en provenance d'Ajaccio" },
-      { time: "16:35", label: "Vol en provenance de Paris Orly" },
-      { time: "20:50", label: "Vol en provenance de Tunis" },
-    ],
-    flightsDep: [
-      { time: "08:20", label: "Vol à destination d'Ajaccio" },
-      { time: "13:00", label: "Vol à destination de Paris Orly" },
-      { time: "17:25", label: "Vol à destination de Tunis" },
-      { time: "21:40", label: "Vol à destination d'Alger" },
-    ],
-  },
-  toulouse: {
-    trainsArr: [
-      { time: "07:05", label: "TGV en provenance de Paris" },
-      { time: "10:50", label: "TGV en provenance de Bordeaux" },
-      { time: "14:15", label: "TGV en provenance de Paris" },
-      { time: "18:40", label: "Intercités en provenance de Bayonne" },
-    ],
-    trainsDep: [
-      { time: "07:40", label: "TGV à destination de Bordeaux" },
-      { time: "11:25", label: "TGV à destination de Paris" },
-      { time: "15:00", label: "Intercités à destination de Bayonne" },
-      { time: "19:15", label: "TGV à destination de Paris" },
-    ],
-    flightsArr: [
-      { time: "08:20", label: "Vol en provenance de Paris Orly" },
-      { time: "12:45", label: "Vol en provenance de Londres" },
-      { time: "16:10", label: "Vol en provenance de Casablanca" },
-      { time: "21:05", label: "Vol en provenance de Lisbonne" },
-    ],
-    flightsDep: [
-      { time: "09:10", label: "Vol à destination de Londres" },
-      { time: "13:35", label: "Vol à destination de Paris Orly" },
-      { time: "17:00", label: "Vol à destination de Lisbonne" },
-      { time: "21:50", label: "Vol à destination de Casablanca" },
-    ],
-  },
-  rennes: {
-    trainsArr: [
-      { time: "07:12", label: "TGV en provenance de Paris Montparnasse" },
-      { time: "09:45", label: "TER en provenance de Brest" },
-      { time: "12:30", label: "TGV en provenance de Paris Montparnasse" },
-      { time: "16:05", label: "TER en provenance de Saint-Malo" },
-      { time: "19:50", label: "TGV en provenance de Paris Montparnasse" },
-      { time: "22:15", label: "TER en provenance de Nantes" },
-    ],
-    trainsDep: [
-      { time: "07:35", label: "TGV à destination de Paris Montparnasse" },
-      { time: "10:15", label: "TER à destination de Saint-Malo" },
-      { time: "13:05", label: "TER à destination de Brest" },
-      { time: "17:20", label: "TGV à destination de Paris Montparnasse" },
-      { time: "20:30", label: "TER à destination de Nantes" },
-    ],
-    flightsArr: [
-      { time: "07:50", label: "Vol en provenance de Lyon" },
-      { time: "13:20", label: "Vol en provenance de Londres" },
-      { time: "18:40", label: "Vol en provenance de Marseille" },
-    ],
-    flightsDep: [
-      { time: "08:30", label: "Vol à destination de Londres" },
-      { time: "14:10", label: "Vol à destination de Lyon" },
-      { time: "19:25", label: "Vol à destination de Marseille" },
-    ],
-  },
-};
 const CITIES = Object.fromEntries(
   Object.entries(RAW_CITIES).map(([key, city]) => [
     key,
@@ -395,30 +429,33 @@ export default function App() {
   const [hour, setHour] = useState(now.getHours());
   const [tab, setTab] = useState("demande");
   const [trafficMode, setTrafficMode] = useState("arrivals"); // "arrivals" | "departures"
-  const [liveTraffic, setLiveTraffic] = useState({ status: "idle", trains: [], flights: [] });
+  const [liveTraffic, setLiveTraffic] = useState({ status: "idle", trains: [], flights: [], flightsAvailable: true });
 
   useEffect(() => {
     if (tab !== "arrivees") return;
     let cancelled = false;
-    setLiveTraffic({ status: "loading", trains: [], flights: [] });
+    setLiveTraffic({ status: "loading", trains: [], flights: [], flightsAvailable: true });
     const station = STATION_NAMES[cityKey];
-    Promise.all([
+    Promise.allSettled([
       fetch(
         `${SERVER_BASE_URL}/api/trains?station=${encodeURIComponent(station)}&kind=${trafficMode}`
       ).then((r) => r.json()),
       fetch(`${SERVER_BASE_URL}/api/flights?city=${cityKey}&kind=${trafficMode}`).then((r) => r.json()),
-    ])
-      .then(([trainsRes, flightsRes]) => {
-        if (cancelled) return;
-        if (trainsRes.error || flightsRes.error) {
-          setLiveTraffic({ status: "error", trains: [], flights: [] });
-        } else {
-          setLiveTraffic({ status: "ready", trains: trainsRes.result || [], flights: flightsRes.result || [] });
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLiveTraffic({ status: "error", trains: [], flights: [] });
-      });
+    ]).then(([trainsSettled, flightsSettled]) => {
+      if (cancelled) return;
+      const trainsOk = trainsSettled.status === "fulfilled" && !trainsSettled.value.error;
+      const flightsOk = flightsSettled.status === "fulfilled" && !flightsSettled.value.error;
+      if (trainsOk) {
+        setLiveTraffic({
+          status: "ready",
+          trains: trainsSettled.value.result || [],
+          flights: flightsOk ? flightsSettled.value.result || [] : [],
+          flightsAvailable: flightsOk,
+        });
+      } else {
+        setLiveTraffic({ status: "error", trains: [], flights: [], flightsAvailable: false });
+      }
+    });
     return () => {
       cancelled = true;
     };
@@ -792,80 +829,103 @@ export default function App() {
                 <span style={{ fontSize: 11.5, color: "#9BA3A8" }}>
                   {liveTraffic.status === "loading" && "Récupération des vraies données…"}
                   {liveTraffic.status === "ready" && "Données en direct (serveur Cadence)"}
-                  {liveTraffic.status === "error" && "Serveur injoignable — horaires indicatifs affichés"}
+                  {liveTraffic.status === "error" && "Serveur injoignable pour le moment"}
                 </span>
               </div>
 
-              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
-                Trains
-              </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-                {(liveTraffic.status === "ready"
-                  ? liveTraffic.trains
-                  : trafficMode === "arrivals"
-                  ? ARRIVALS[cityKey].trainsArr
-                  : ARRIVALS[cityKey].trainsDep
-                ).map((t, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      background: "#1D2124",
-                      border: "1px solid #262B2F",
-                      borderRadius: 10,
-                      padding: "9px 12px",
-                    }}
-                  >
-                    <TrainFront size={15} color="#3E8E8A" style={{ flexShrink: 0 }} />
-                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>
-                      {t.time}
-                    </span>
-                    <span style={{ fontSize: 13, color: "#C7CCCF" }}>{t.label}</span>
-                  </div>
-                ))}
-              </div>
+              {liveTraffic.status === "loading" && (
+                <p style={{ fontSize: 13, color: "#9BA3A8" }}>Chargement des horaires réels…</p>
+              )}
 
-              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
-                Vols
-              </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {(liveTraffic.status === "ready"
-                  ? liveTraffic.flights
-                  : trafficMode === "arrivals"
-                  ? ARRIVALS[cityKey].flightsArr
-                  : ARRIVALS[cityKey].flightsDep
-                ).map((f, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      background: "#1D2124",
-                      border: "1px solid #262B2F",
-                      borderRadius: 10,
-                      padding: "9px 12px",
-                    }}
-                  >
-                    <Plane size={15} color="#E8934A" style={{ flexShrink: 0 }} />
-                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>
-                      {f.time}
-                    </span>
-                    <span style={{ fontSize: 13, color: "#C7CCCF" }}>{f.label}</span>
-                  </div>
-                ))}
-              </div>
+              {liveTraffic.status === "error" && (
+                <div
+                  style={{
+                    background: "#1D2124",
+                    border: "1px solid #262B2F",
+                    borderRadius: 12,
+                    padding: "14px",
+                    fontSize: 13,
+                    color: "#9BA3A8",
+                  }}
+                >
+                  Impossible de récupérer les horaires pour {city.label} pour le moment. Réessayez dans quelques instants.
+                </div>
+              )}
 
-              <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
-                <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
-                <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
-                  {liveTraffic.status === "ready"
-                    ? "Prochains passages réels, récupérés depuis SNCF et AviationStack via votre serveur relais."
-                    : "Horaires indicatifs affichés en secours (serveur relais indisponible pour le moment)."}
-                </p>
-              </div>
+              {liveTraffic.status === "ready" && (
+                <>
+                  <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                    Trains
+                  </h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+                    {liveTraffic.trains.length === 0 && (
+                      <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun train trouvé pour l'instant.</p>
+                    )}
+                    {liveTraffic.trains.map((t, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          background: "#1D2124",
+                          border: "1px solid #262B2F",
+                          borderRadius: 10,
+                          padding: "9px 12px",
+                        }}
+                      >
+                        <TrainFront size={15} color="#3E8E8A" style={{ flexShrink: 0 }} />
+                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>
+                          {t.time}
+                        </span>
+                        <span style={{ fontSize: 13, color: "#C7CCCF" }}>{t.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                    Vols
+                  </h3>
+                  {!liveTraffic.flightsAvailable ? (
+                    <p style={{ fontSize: 13, color: "#9BA3A8" }}>
+                      Pas de grand aéroport desservant directement {city.label}.
+                    </p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {liveTraffic.flights.length === 0 && (
+                        <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun vol trouvé pour l'instant.</p>
+                      )}
+                      {liveTraffic.flights.map((f, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            background: "#1D2124",
+                            border: "1px solid #262B2F",
+                            borderRadius: 10,
+                            padding: "9px 12px",
+                          }}
+                        >
+                          <Plane size={15} color="#E8934A" style={{ flexShrink: 0 }} />
+                          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>
+                            {f.time}
+                          </span>
+                          <span style={{ fontSize: 13, color: "#C7CCCF" }}>{f.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
+                    <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
+                      Prochains passages réels, récupérés depuis SNCF{liveTraffic.flightsAvailable ? " et AviationStack" : ""} via votre serveur relais.
+                    </p>
+                  </div>
+                </>
+              )}
             </>
           )}
 
@@ -909,7 +969,7 @@ export default function App() {
               )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {(liveEvents.status === "ready" ? liveEvents.events : city.events).map((ev, i) => (
+                {(liveEvents.status === "ready" ? liveEvents.events : city.events || []).map((ev, i) => (
                   <div
                     key={i}
                     style={{
@@ -986,7 +1046,7 @@ export default function App() {
                 À venir
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {(liveEvents.status === "ready" ? liveEvents.events : city.events).slice(0, 5).map((ev, i) => (
+                {(liveEvents.status === "ready" ? liveEvents.events : city.events || []).slice(0, 5).map((ev, i) => (
                   <div
                     key={i}
                     style={{
