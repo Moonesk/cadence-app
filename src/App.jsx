@@ -15,6 +15,12 @@ import {
   List,
   Map as MapIcon,
   CalendarClock,
+  User,
+  Car,
+  BarChart3,
+  Settings,
+  ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 
 function normalize(s) {
@@ -551,6 +557,7 @@ export default function App() {
   const [dayOffset, setDayOffset] = useState(0); // 0 = aujourd'hui, 1 = demain
   const [hour, setHour] = useState(now.getHours());
   const [tab, setTab] = useState("demande");
+  const [isOnline, setIsOnline] = useState(true);
   const [planningSchedule, setPlanningSchedule] = useState(() => {
     const obj = {};
     DAYS_OF_WEEK.forEach((d, i) => {
@@ -891,6 +898,128 @@ export default function App() {
         <div style={{ flex: 1, overflowY: "auto", padding: "4px 18px 18px" }}>
           {tab === "demande" && (
             <>
+              {/* Profil + statut */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: "50%",
+                      background: "linear-gradient(135deg, #4C8DFF, #6F5CFF)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <User size={20} color="#F3F5FF" />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15 }}>
+                      {hour < 18 ? "Bonjour" : "Bonsoir"}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#8A92C2" }}>Bonne route !</div>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontSize: 11.5,
+                    fontWeight: 600,
+                    color: "#C7CDF0",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid #2B3564",
+                    borderRadius: 999,
+                    padding: "6px 10px",
+                  }}
+                >
+                  <Car size={13} /> VTC / Taxi
+                </span>
+              </div>
+
+              {/* Toggle En ligne + ville */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                <button
+                  onClick={() => setIsOnline((v) => !v)}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 14px",
+                    borderRadius: 999,
+                    border: "1px solid " + (isOnline ? "rgba(47,212,128,0.4)" : "#2B3564"),
+                    background: isOnline
+                      ? "linear-gradient(90deg, rgba(47,212,128,0.22), rgba(47,212,128,0.08))"
+                      : "rgba(255,255,255,0.04)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: "50%",
+                      background: isOnline ? "#2FD480" : "#5B6396",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: isOnline ? "#2FD480" : "#8A92C2" }}>
+                    {isOnline ? "En ligne" : "Hors ligne"}
+                  </span>
+                </button>
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 14px",
+                    borderRadius: 999,
+                    border: "1px solid #2B3564",
+                    background: "rgba(76,141,255,0.10)",
+                  }}
+                >
+                  <MapPin size={15} color="#4C8DFF" style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#F3F5FF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {city.label}
+                  </span>
+                </div>
+              </div>
+
+              {/* Cartes rapides */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 18 }}>
+                {[
+                  { label: "Trafic", Icon: TrainFront, colors: ["#4C8DFF", "#6F5CFF"], action: () => setTab("arrivees") },
+                  { label: "Carte", Icon: MapIcon, colors: ["#2FD480", "#19A66A"], action: () => { setTab("demande"); setDemandView("map"); } },
+                  { label: "Planning", Icon: BarChart3, colors: ["#FF9F43", "#FF7A3D"], action: () => setTab("planning") },
+                  { label: "Alertes", Icon: Settings, colors: ["#5B6396", "#3A4578"], action: () => setTab("alertes") },
+                ].map(({ label, Icon, colors, action }) => (
+                  <button
+                    key={label}
+                    onClick={action}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "12px 4px",
+                      borderRadius: 14,
+                      border: "none",
+                      background: `linear-gradient(150deg, ${colors[0]}, ${colors[1]})`,
+                      cursor: "pointer",
+                      boxShadow: `0 8px 18px -6px ${colors[0]}88`,
+                    }}
+                  >
+                    <Icon size={18} color="#F3F5FF" />
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#F3F5FF" }}>{label}</span>
+                  </button>
+                ))}
+              </div>
+
               {/* Bannière ville */}
               <div
                 style={{
@@ -924,25 +1053,97 @@ export default function App() {
                   <div style={{ fontSize: 12.5, color: "#C7CDF0", marginBottom: 12 }}>
                     Des courses en toute sérénité
                   </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {["Zones en direct", "Trafic réel", "Événements"].map((t) => (
-                      <span
-                        key={t}
-                        style={{
-                          fontSize: 10.5,
-                          fontWeight: 600,
-                          color: "#C7CDF0",
-                          background: "rgba(255,255,255,0.08)",
-                          border: "1px solid rgba(255,255,255,0.14)",
-                          borderRadius: 999,
-                          padding: "4px 9px",
-                        }}
-                      >
-                        {t}
-                      </span>
-                    ))}
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                    <ShieldCheck size={13} color="#2FD480" />
+                    <span style={{ fontSize: 11, color: "#C7CDF0" }}>Sécurité • Confort • Satisfaction</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Prochains repères */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#2FD480" }} />
+                  <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 14.5 }}>
+                    Zones à surveiller
+                  </span>
+                </div>
+                <button
+                  onClick={() => setDemandView("list")}
+                  style={{ display: "flex", alignItems: "center", gap: 2, background: "none", border: "none", color: "#4C8DFF", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                >
+                  Voir tout <ChevronRight size={13} />
+                </button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+                {zonesScored.slice(0, 4).map((z) => {
+                  const Icon = ICONS[z.type];
+                  const typeLabels = { airport: "Aéroport", station: "Gare", business: "Affaires", nightlife: "Vie nocturne", leisure: "Loisirs" };
+                  return (
+                    <div
+                      key={z.id}
+                      onClick={() => openZoneDetail(z)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        background: "#141A38",
+                        border: "1px solid #2B3564",
+                        borderRadius: 14,
+                        padding: "10px 12px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 11,
+                          background: TYPE_COLORS[z.type],
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon size={16} color="#0B0F24" strokeWidth={2.3} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                          <span
+                            style={{
+                              fontSize: 9.5,
+                              fontWeight: 700,
+                              color: TYPE_COLORS[z.type],
+                              background: `${TYPE_COLORS[z.type]}22`,
+                              borderRadius: 999,
+                              padding: "2px 7px",
+                            }}
+                          >
+                            {typeLabels[z.type]}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {z.name}
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: 700,
+                          color: demandColor(z.score),
+                          background: `${demandColor(z.score)}22`,
+                          borderRadius: 999,
+                          padding: "5px 9px",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {z.score >= 70 ? "Fort" : z.score >= 40 ? "Modéré" : "Calme"}
+                      </span>
+                      <ChevronRight size={15} color="#5B6396" style={{ flexShrink: 0 }} />
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Jour + heure */}
