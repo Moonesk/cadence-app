@@ -1331,7 +1331,7 @@ export default function App() {
               <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
                 <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
                 <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
-                  Calculé à partir des tendances horaires habituelles de {city.label}, pas d'un flux de courses en temps réel.
+                  Calculé à partir des tendances horaires habituelles de {city.label}.
                 </p>
               </div>
             </>
