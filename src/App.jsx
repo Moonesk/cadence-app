@@ -514,10 +514,17 @@ function Sparkline({ values, hour }) {
   );
 }
 
+// Clé TomTom pour la couche trafic routier en direct — clé "publique"
+// par conception (protégée par liste de domaines autorisés côté TomTom,
+// pas par le secret), donc normal qu'elle soit visible ici.
+const TOMTOM_KEY = "gJVg4Tthyg45NGesmVJgZsYEkqiLeNSQ";
+
 function DemandMap({ zones, center, onZoneClick }) {
+  const [showTraffic, setShowTraffic] = useState(true);
   return (
     <div
       style={{
+        position: "relative",
         borderRadius: 14,
         overflow: "hidden",
         border: "1px solid #2B3564",
@@ -525,6 +532,29 @@ function DemandMap({ zones, center, onZoneClick }) {
         height: 260,
       }}
     >
+      <button
+        onClick={() => setShowTraffic((v) => !v)}
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          zIndex: 500,
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+          fontSize: 11,
+          fontWeight: 600,
+          padding: "6px 10px",
+          borderRadius: 999,
+          border: "1px solid " + (showTraffic ? "rgba(255,159,67,0.5)" : "#2B3564"),
+          background: showTraffic ? "rgba(255,159,67,0.18)" : "rgba(11,15,36,0.85)",
+          color: showTraffic ? "#FF9F43" : "#8A92C2",
+          cursor: "pointer",
+        }}
+      >
+        <span style={{ width: 6, height: 6, borderRadius: "50%", background: showTraffic ? "#FF9F43" : "#5B6396" }} />
+        Trafic routier
+      </button>
       <MapContainer
         center={center}
         zoom={12}
@@ -536,6 +566,12 @@ function DemandMap({ zones, center, onZoneClick }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        {showTraffic && (
+          <TileLayer
+            url={`https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${TOMTOM_KEY}`}
+            opacity={0.75}
+          />
+        )}
         {zones.map((z) => (
           <CircleMarker
             key={z.id}
