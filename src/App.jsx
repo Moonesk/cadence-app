@@ -782,11 +782,21 @@ export default function App() {
         <div style={{ padding: "20px 18px 12px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <img
-                src={logoSrc}
-                alt="Cadence"
-                style={{ width: 56, height: 56, borderRadius: 14, flexShrink: 0 }}
-              />
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  flexShrink: 0,
+                }}
+              >
+                <img
+                  src={logoSrc}
+                  alt="Cadence"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scale(1.55)" }}
+                />
+              </div>
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", lineHeight: 1.1 }}>
                 <span
                   style={{
