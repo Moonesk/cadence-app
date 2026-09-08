@@ -550,17 +550,14 @@ export default function App() {
   });
   const [demandView, setDemandView] = useState("map"); // "map" | "list"
   const [trafficMode, setTrafficMode] = useState("arrivals"); // "arrivals" | "departures"
-  const [trafficDayOffset, setTrafficDayOffset] = useState(0); // 0-6 (aujourd'hui + 6 jours)
   const [trafficStartHour, setTrafficStartHour] = useState(0);
   const [trafficEndHour, setTrafficEndHour] = useState(23);
   const [liveTraffic, setLiveTraffic] = useState({ status: "idle", trains: [], flights: [], flightsAvailable: true });
 
   const trafficDate = useMemo(() => {
-    const d = new Date(now);
-    d.setDate(d.getDate() + trafficDayOffset);
     const pad = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  }, [now, trafficDayOffset]);
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  }, [now]);
 
   useEffect(() => {
     if (tab !== "arrivees") return;
@@ -767,9 +764,11 @@ export default function App() {
             >
               Cadence
             </h1>
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#9BA3A8" }}>
-              {hourLabel}
-            </span>
+            {["demande", "planning"].includes(tab) && (
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#9BA3A8" }}>
+                {hourLabel}
+              </span>
+            )}
           </div>
           <p style={{ margin: "2px 0 14px", fontSize: 13, color: "#9BA3A8" }}>
             Où et quand la demande est forte
@@ -1028,39 +1027,8 @@ export default function App() {
                 Trafic gare / aéroport — {city.label}
               </h2>
               <p style={{ fontSize: 12, color: "#9BA3A8", margin: "0 0 12px" }}>
-                Arrivées et départs créent de la demande ponctuelle à la gare et à l'aéroport.
+                Arrivées et départs créent de la demande ponctuelle à la gare et à l'aéroport, aujourd'hui.
               </p>
-
-              {/* Sélecteur de date : aujourd'hui + 6 jours */}
-              <div style={{ display: "flex", gap: 6, marginBottom: 12, overflowX: "auto", paddingBottom: 2 }}>
-                {Array.from({ length: 7 }, (_, i) => {
-                  const d = new Date(now);
-                  d.setDate(d.getDate() + i);
-                  const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-                  const label = i === 0 ? "Auj." : `${dayNames[d.getDay()]} ${d.getDate()}`;
-                  const active = trafficDayOffset === i;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => setTrafficDayOffset(i)}
-                      style={{
-                        flexShrink: 0,
-                        padding: "7px 12px",
-                        borderRadius: 999,
-                        border: "1px solid " + (active ? "#E8934A" : "#33393E"),
-                        background: active ? "rgba(232,147,74,0.12)" : "transparent",
-                        color: active ? "#E8934A" : "#9BA3A8",
-                        fontSize: 12.5,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
 
               <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                 {[
@@ -1248,7 +1216,7 @@ export default function App() {
                   <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
                     <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
                     <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
-                      Prochains passages réels, récupérés depuis SNCF{liveTraffic.flightsAvailable ? " et AviationStack" : ""} via votre serveur relais.
+                      Prochains passages réels à partir de maintenant, récupérés depuis SNCF{liveTraffic.flightsAvailable ? " et AviationStack" : ""}. La plage horaire filtre parmi ce qui reste à venir aujourd'hui.
                     </p>
                   </div>
                 </>
