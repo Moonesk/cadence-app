@@ -424,6 +424,30 @@ export default function App() {
     };
   }, [tab, cityKey, trafficMode]);
 
+  const [liveEvents, setLiveEvents] = useState({ status: "idle", events: [] });
+
+  useEffect(() => {
+    if (tab !== "evenements" && tab !== "alertes") return;
+    let cancelled = false;
+    setLiveEvents({ status: "loading", events: [] });
+    fetch(`${SERVER_BASE_URL}/api/events?city=${cityKey}`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (cancelled) return;
+        if (res.error) {
+          setLiveEvents({ status: "error", events: [] });
+        } else {
+          setLiveEvents({ status: "ready", events: res.result || [] });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLiveEvents({ status: "error", events: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, cityKey]);
+
   const city = CITIES[cityKey];
 
   const targetDate = useMemo(() => {
@@ -847,11 +871,29 @@ export default function App() {
 
           {tab === "evenements" && (
             <>
-              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "8px 0 10px" }}>
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "8px 0 4px" }}>
                 Événements à venir — {city.label}
               </h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 14px" }}>
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background:
+                      liveEvents.status === "ready" ? "#3E8E8A" : liveEvents.status === "error" ? "#D9635A" : "#6D757B",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ fontSize: 11.5, color: "#9BA3A8" }}>
+                  {liveEvents.status === "loading" && "Récupération des vrais événements…"}
+                  {liveEvents.status === "ready" && "Données en direct (Ticketmaster)"}
+                  {liveEvents.status === "error" && "Serveur injoignable — exemples affichés"}
+                </span>
+              </div>
+
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {city.events.map((ev, i) => (
+                {(liveEvents.status === "ready" ? liveEvents.events : city.events).map((ev, i) => (
                   <div
                     key={i}
                     style={{
@@ -869,18 +911,18 @@ export default function App() {
                           padding: "2px 8px",
                           borderRadius: 999,
                           flexShrink: 0,
-                          color: ev.impact === "Fort" ? "#E8934A" : "#3E8E8A",
-                          background: ev.impact === "Fort" ? "rgba(232,147,74,0.12)" : "rgba(62,142,138,0.14)",
+                          color: "#3E8E8A",
+                          background: "rgba(62,142,138,0.14)",
                         }}
                       >
-                        Impact {ev.impact.toLowerCase()}
+                        {ev.category || ev.impact || "Événement"}
                       </span>
                     </div>
                     <div style={{ fontSize: 12.5, color: "#9BA3A8", marginTop: 6 }}>
-                      {ev.date} · {ev.time}
+                      {ev.date} {ev.time ? `· ${ev.time}` : ""}
                     </div>
                     <div style={{ fontSize: 12.5, color: "#9BA3A8", marginTop: 2 }}>
-                      Secteur : {ev.zone}
+                      {ev.venue || ev.zone}
                     </div>
                   </div>
                 ))}
@@ -888,7 +930,9 @@ export default function App() {
               <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#1D2124", borderRadius: 10, border: "1px solid #262B2F" }}>
                 <Info size={15} color="#6D757B" style={{ flexShrink: 0, marginTop: 1 }} />
                 <p style={{ margin: 0, fontSize: 11.5, color: "#6D757B", lineHeight: 1.5 }}>
-                  Exemples illustratifs. En production, ce calendrier serait alimenté par une source d'événements mise à jour régulièrement.
+                  {liveEvents.status === "ready"
+                    ? "Concerts, sport, théâtre et festivals à venir, récupérés via Ticketmaster."
+                    : "Exemples affichés en secours (serveur relais indisponible pour le moment)."}
                 </p>
               </div>
             </>
@@ -926,7 +970,7 @@ export default function App() {
                 À venir
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {city.events.map((ev, i) => (
+                {(liveEvents.status === "ready" ? liveEvents.events : city.events).slice(0, 5).map((ev, i) => (
                   <div
                     key={i}
                     style={{
@@ -938,7 +982,7 @@ export default function App() {
                       fontSize: 13.5,
                     }}
                   >
-                    {ev.name} — {ev.date} ({ev.zone})
+                    {ev.name} — {ev.date} ({ev.venue || ev.zone})
                   </div>
                 ))}
               </div>
