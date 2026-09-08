@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import logoSrc from "./assets/logo.png";
 import {
   MapPin,
   CalendarDays,
@@ -780,21 +781,41 @@ export default function App() {
         {/* Header */}
         <div style={{ padding: "20px 18px 12px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <h1
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontWeight: 700,
-                fontSize: 24,
-                margin: 0,
-                letterSpacing: "-0.01em",
-                background: "linear-gradient(90deg, #F3F5FF, #A9C0FF)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              Cadence
-            </h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <img
+                src={logoSrc}
+                alt="Cadence"
+                style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0 }}
+              />
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", lineHeight: 1.1 }}>
+                <span
+                  style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 19,
+                    letterSpacing: "-0.01em",
+                    background: "linear-gradient(90deg, #F3F5FF, #A9C0FF)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  Cadence
+                </span>
+                <span
+                  style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: 600,
+                    fontSize: 9.5,
+                    letterSpacing: "0.08em",
+                    color: "#5B6396",
+                    marginTop: 1,
+                  }}
+                >
+                  VTC &amp; TAXI
+                </span>
+              </div>
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {["demande", "planning"].includes(tab) && (
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#8A92C2" }}>
