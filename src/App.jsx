@@ -541,18 +541,19 @@ function DemandMap({ zones, center, onZoneClick }) {
           zIndex: 500,
           display: "flex",
           alignItems: "center",
-          gap: 5,
+          gap: 6,
           fontSize: 11,
-          fontWeight: 600,
-          padding: "6px 10px",
+          fontWeight: 700,
+          padding: "7px 11px",
           borderRadius: 999,
-          border: "1px solid " + (showTraffic ? "rgba(255,159,67,0.5)" : "#2B3564"),
-          background: showTraffic ? "rgba(255,159,67,0.18)" : "rgba(11,15,36,0.85)",
-          color: showTraffic ? "#FF9F43" : "#8A92C2",
+          border: "1px solid " + (showTraffic ? "#FF9F43" : "#2B3564"),
+          background: showTraffic ? "#FF9F43" : "#0B0F24",
+          color: showTraffic ? "#0B0F24" : "#F3F5FF",
+          boxShadow: "0 3px 10px rgba(0,0,0,0.45)",
           cursor: "pointer",
         }}
       >
-        <span style={{ width: 6, height: 6, borderRadius: "50%", background: showTraffic ? "#FF9F43" : "#5B6396" }} />
+        <span style={{ width: 6, height: 6, borderRadius: "50%", background: showTraffic ? "#0B0F24" : "#5B6396" }} />
         Trafic routier
       </button>
       <MapContainer
