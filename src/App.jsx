@@ -1233,7 +1233,9 @@ export default function App() {
                 />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#5B6396", marginTop: 4 }}>
                   <span>00:00</span>
+                  <span>06:00</span>
                   <span>12:00</span>
+                  <span>18:00</span>
                   <span>23:00</span>
                 </div>
               </div>
@@ -1344,6 +1346,58 @@ export default function App() {
                 })}
               </div>
               )}
+
+              {/* Jour + heure (copie en bas de liste, pour ne pas remonter tout en haut) */}
+              <div
+                style={{
+                  background: "#141A38",
+                  border: "1px solid #2B3564",
+                  borderRadius: 14,
+                  padding: "14px 16px",
+                  marginTop: 14,
+                  marginBottom: 16,
+                }}
+              >
+                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                  {[
+                    [0, "Aujourd'hui"],
+                    [1, "Demain"],
+                  ].map(([val, label]) => (
+                    <button
+                      key={val}
+                      onClick={() => setDayOffset(val)}
+                      style={{
+                        flex: 1,
+                        padding: "7px 0",
+                        borderRadius: 8,
+                        border: "1px solid " + (dayOffset === val ? "#4C8DFF" : "#3A4578"),
+                        background: dayOffset === val ? "rgba(76,141,255,0.16)" : "transparent",
+                        color: dayOffset === val ? "#4C8DFF" : "#8A92C2",
+                        fontSize: 13,
+                        fontWeight: 500,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={23}
+                  value={hour}
+                  onChange={(e) => setHour(Number(e.target.value))}
+                  style={{ width: "100%" }}
+                />
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#5B6396", marginTop: 4 }}>
+                  <span>00:00</span>
+                  <span>06:00</span>
+                  <span>12:00</span>
+                  <span>18:00</span>
+                  <span>23:00</span>
+                </div>
+              </div>
 
               <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#141A38", borderRadius: 10, border: "1px solid #2B3564" }}>
                 <Info size={15} color="#5B6396" style={{ flexShrink: 0, marginTop: 1 }} />
