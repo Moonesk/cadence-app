@@ -488,7 +488,7 @@ function Sparkline({ values, hour }) {
   );
 }
 
-function DemandMap({ zones, center }) {
+function DemandMap({ zones, center, onZoneClick }) {
   return (
     <div
       style={{
@@ -521,6 +521,7 @@ function DemandMap({ zones, center }) {
               fillOpacity: 0.65,
               weight: 2,
             }}
+            eventHandlers={{ click: () => onZoneClick && onZoneClick(z) }}
           >
             <Tooltip direction="top" offset={[0, -6]}>
               {z.name} — {z.score}/100
@@ -549,7 +550,17 @@ export default function App() {
   });
   const [demandView, setDemandView] = useState("map"); // "map" | "list"
   const [trafficMode, setTrafficMode] = useState("arrivals"); // "arrivals" | "departures"
+  const [trafficDayOffset, setTrafficDayOffset] = useState(0); // 0-6 (aujourd'hui + 6 jours)
+  const [trafficStartHour, setTrafficStartHour] = useState(0);
+  const [trafficEndHour, setTrafficEndHour] = useState(23);
   const [liveTraffic, setLiveTraffic] = useState({ status: "idle", trains: [], flights: [], flightsAvailable: true });
+
+  const trafficDate = useMemo(() => {
+    const d = new Date(now);
+    d.setDate(d.getDate() + trafficDayOffset);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }, [now, trafficDayOffset]);
 
   useEffect(() => {
     if (tab !== "arrivees") return;
@@ -558,9 +569,11 @@ export default function App() {
     const station = STATION_NAMES[cityKey];
     Promise.allSettled([
       fetch(
-        `${SERVER_BASE_URL}/api/trains?station=${encodeURIComponent(station)}&kind=${trafficMode}`
+        `${SERVER_BASE_URL}/api/trains?station=${encodeURIComponent(station)}&kind=${trafficMode}&date=${trafficDate}`
       ).then((r) => r.json()),
-      fetch(`${SERVER_BASE_URL}/api/flights?city=${cityKey}&kind=${trafficMode}`).then((r) => r.json()),
+      fetch(`${SERVER_BASE_URL}/api/flights?city=${cityKey}&kind=${trafficMode}&date=${trafficDate}`).then((r) =>
+        r.json()
+      ),
     ]).then(([trainsSettled, flightsSettled]) => {
       if (cancelled) return;
       const trainsOk = trainsSettled.status === "fulfilled" && !trainsSettled.value.error;
@@ -579,9 +592,68 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [tab, cityKey, trafficMode]);
+  }, [tab, cityKey, trafficMode, trafficDate]);
+
+  // Filtre par plage horaire choisie (côté appli, sur les données déjà reçues)
+  const filterByHourRange = (items) =>
+    items.filter((it) => {
+      const h = Number((it.time || "00:00").slice(0, 2));
+      return trafficStartHour <= trafficEndHour
+        ? h >= trafficStartHour && h <= trafficEndHour
+        : h >= trafficStartHour || h <= trafficEndHour;
+    });
+  const visibleTrains = filterByHourRange(liveTraffic.trains);
+  const visibleFlights = filterByHourRange(liveTraffic.flights);
 
   const [liveEvents, setLiveEvents] = useState({ status: "idle", events: [] });
+
+  // Panneau de détail affiché au clic sur une zone (carte ou liste)
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [zoneDetail, setZoneDetail] = useState({ status: "idle", trains: [], flights: [], events: [] });
+
+  const demandDateStr = useMemo(() => {
+    const d = new Date(now);
+    d.setDate(d.getDate() + dayOffset);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }, [now, dayOffset]);
+
+  function isNearHour(itemTime, targetHour, window = 1) {
+    const h = Number((itemTime || "00:00").slice(0, 2));
+    let diff = Math.abs(h - targetHour);
+    diff = Math.min(diff, 24 - diff);
+    return diff <= window;
+  }
+
+  async function openZoneDetail(zone) {
+    setSelectedZone(zone);
+    setZoneDetail({ status: "loading", trains: [], flights: [], events: [] });
+    try {
+      if (zone.type === "airport") {
+        const res = await fetch(
+          `${SERVER_BASE_URL}/api/flights?city=${cityKey}&kind=arrivals&date=${demandDateStr}`
+        ).then((r) => r.json());
+        if (res.error) throw new Error(res.error);
+        const flights = (res.result || []).filter((f) => isNearHour(f.time, hour));
+        setZoneDetail({ status: "ready", trains: [], flights, events: [] });
+      } else if (zone.type === "station") {
+        const station = STATION_NAMES[cityKey];
+        const res = await fetch(
+          `${SERVER_BASE_URL}/api/trains?station=${encodeURIComponent(station)}&kind=arrivals&date=${demandDateStr}`
+        ).then((r) => r.json());
+        if (res.error) throw new Error(res.error);
+        const trains = (res.result || []).filter((t) => isNearHour(t.time, hour));
+        setZoneDetail({ status: "ready", trains, flights: [], events: [] });
+      } else {
+        // Zones affaires / vie nocturne / loisirs -> événements de la ville ce jour-là
+        const res = await fetch(`${SERVER_BASE_URL}/api/events?city=${cityKey}`).then((r) => r.json());
+        if (res.error) throw new Error(res.error);
+        setZoneDetail({ status: "ready", trains: [], flights: [], events: res.result || [] });
+      }
+    } catch {
+      setZoneDetail({ status: "error", trains: [], flights: [], events: [] });
+    }
+  }
 
   useEffect(() => {
     if (tab !== "evenements" && tab !== "alertes") return;
@@ -678,6 +750,7 @@ export default function App() {
           flexDirection: "column",
           minHeight: 720,
           color: "#EDEFEF",
+          position: "relative",
         }}
       >
         {/* Header */}
@@ -879,7 +952,7 @@ export default function App() {
               </div>
 
               {demandView === "map" && (
-                <DemandMap zones={zonesScored} center={[city.lat, city.lon]} />
+                <DemandMap zones={zonesScored} center={[city.lat, city.lon]} onZoneClick={openZoneDetail} />
               )}
 
               {demandView === "list" && (
@@ -889,6 +962,7 @@ export default function App() {
                   return (
                     <div
                       key={z.id}
+                      onClick={() => openZoneDetail(z)}
                       style={{
                         background: "#1D2124",
                         border: "1px solid #262B2F",
@@ -897,6 +971,7 @@ export default function App() {
                         display: "flex",
                         alignItems: "center",
                         gap: 12,
+                        cursor: "pointer",
                       }}
                     >
                       <div
@@ -950,13 +1025,44 @@ export default function App() {
           {tab === "arrivees" && (
             <>
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "8px 0 4px" }}>
-                Trafic gare / aéroport — {city.label}, {dayLabel}
+                Trafic gare / aéroport — {city.label}
               </h2>
               <p style={{ fontSize: 12, color: "#9BA3A8", margin: "0 0 12px" }}>
                 Arrivées et départs créent de la demande ponctuelle à la gare et à l'aéroport.
               </p>
 
-              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              {/* Sélecteur de date : aujourd'hui + 6 jours */}
+              <div style={{ display: "flex", gap: 6, marginBottom: 12, overflowX: "auto", paddingBottom: 2 }}>
+                {Array.from({ length: 7 }, (_, i) => {
+                  const d = new Date(now);
+                  d.setDate(d.getDate() + i);
+                  const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+                  const label = i === 0 ? "Auj." : `${dayNames[d.getDay()]} ${d.getDate()}`;
+                  const active = trafficDayOffset === i;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setTrafficDayOffset(i)}
+                      style={{
+                        flexShrink: 0,
+                        padding: "7px 12px",
+                        borderRadius: 999,
+                        border: "1px solid " + (active ? "#E8934A" : "#33393E"),
+                        background: active ? "rgba(232,147,74,0.12)" : "transparent",
+                        color: active ? "#E8934A" : "#9BA3A8",
+                        fontSize: 12.5,
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                 {[
                   ["arrivals", "Arrivées"],
                   ["departures", "Départs"],
@@ -979,6 +1085,61 @@ export default function App() {
                     {label}
                   </button>
                 ))}
+              </div>
+
+              {/* Plage horaire */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 14,
+                  background: "#1D2124",
+                  border: "1px solid #262B2F",
+                  borderRadius: 10,
+                  padding: "8px 10px",
+                }}
+              >
+                <span style={{ fontSize: 12, color: "#9BA3A8", flexShrink: 0 }}>Plage horaire</span>
+                <select
+                  value={trafficStartHour}
+                  onChange={(e) => setTrafficStartHour(Number(e.target.value))}
+                  style={{
+                    flex: 1,
+                    padding: "6px 6px",
+                    borderRadius: 6,
+                    border: "1px solid #33393E",
+                    background: "#14171A",
+                    color: "#EDEFEF",
+                    fontSize: 12.5,
+                  }}
+                >
+                  {Array.from({ length: 24 }, (_, h) => (
+                    <option key={h} value={h}>
+                      {formatHour(h)}
+                    </option>
+                  ))}
+                </select>
+                <span style={{ color: "#6D757B", fontSize: 12.5 }}>à</span>
+                <select
+                  value={trafficEndHour}
+                  onChange={(e) => setTrafficEndHour(Number(e.target.value))}
+                  style={{
+                    flex: 1,
+                    padding: "6px 6px",
+                    borderRadius: 6,
+                    border: "1px solid #33393E",
+                    background: "#14171A",
+                    color: "#EDEFEF",
+                    fontSize: 12.5,
+                  }}
+                >
+                  {Array.from({ length: 24 }, (_, h) => (
+                    <option key={h} value={h}>
+                      {formatHour(h)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
@@ -1021,13 +1182,13 @@ export default function App() {
               {liveTraffic.status === "ready" && (
                 <>
                   <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
-                    Trains
+                    Trains ({visibleTrains.length})
                   </h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-                    {liveTraffic.trains.length === 0 && (
-                      <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun train trouvé pour l'instant.</p>
+                    {visibleTrains.length === 0 && (
+                      <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun train sur cette plage horaire.</p>
                     )}
-                    {liveTraffic.trains.map((t, i) => (
+                    {visibleTrains.map((t, i) => (
                       <div
                         key={i}
                         style={{
@@ -1050,7 +1211,7 @@ export default function App() {
                   </div>
 
                   <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
-                    Vols
+                    Vols {liveTraffic.flightsAvailable ? `(${visibleFlights.length})` : ""}
                   </h3>
                   {!liveTraffic.flightsAvailable ? (
                     <p style={{ fontSize: 13, color: "#9BA3A8" }}>
@@ -1058,10 +1219,10 @@ export default function App() {
                     </p>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {liveTraffic.flights.length === 0 && (
-                        <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun vol trouvé pour l'instant.</p>
+                      {visibleFlights.length === 0 && (
+                        <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun vol sur cette plage horaire.</p>
                       )}
-                      {liveTraffic.flights.map((f, i) => (
+                      {visibleFlights.map((f, i) => (
                         <div
                           key={i}
                           style={{
@@ -1462,6 +1623,128 @@ export default function App() {
             </button>
           ))}
         </div>
+
+        {/* Panneau de détail — s'affiche au clic sur une zone (carte ou liste) */}
+        {selectedZone && (
+          <div
+            onClick={() => setSelectedZone(null)}
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "rgba(11,12,13,0.72)",
+              display: "flex",
+              alignItems: "flex-end",
+              zIndex: 20,
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "100%",
+                maxHeight: "78%",
+                background: "#1D2124",
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+                border: "1px solid #262B2F",
+                padding: "16px 18px calc(16px + env(safe-area-inset-bottom, 0px))",
+                overflowY: "auto",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {(() => {
+                    const Icon = ICONS[selectedZone.type];
+                    return <Icon size={17} color={demandColor(selectedZone.score)} />;
+                  })()}
+                  <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 15 }}>
+                    {selectedZone.name}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSelectedZone(null)}
+                  style={{ background: "none", border: "none", color: "#6D757B", fontSize: 20, cursor: "pointer", padding: 4 }}
+                  aria-label="Fermer"
+                >
+                  ×
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: "#9BA3A8", margin: "0 0 14px" }}>
+                Autour de {formatHour(hour)}, {dayLabel} — score {selectedZone.score}/100
+              </p>
+
+              {zoneDetail.status === "loading" && (
+                <p style={{ fontSize: 13, color: "#9BA3A8" }}>Récupération des infos…</p>
+              )}
+              {zoneDetail.status === "error" && (
+                <p style={{ fontSize: 13, color: "#9BA3A8" }}>Impossible de récupérer les infos pour le moment.</p>
+              )}
+
+              {zoneDetail.status === "ready" && selectedZone.type === "airport" && (
+                <>
+                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                    Vols autour de cette heure
+                  </h4>
+                  {zoneDetail.flights.length === 0 ? (
+                    <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun vol proche de cette heure.</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {zoneDetail.flights.map((f, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "#14171A", border: "1px solid #262B2F", borderRadius: 10, padding: "9px 12px" }}>
+                          <Plane size={14} color="#E8934A" style={{ flexShrink: 0 }} />
+                          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>{f.time}</span>
+                          <span style={{ fontSize: 13, color: "#C7CCCF" }}>{f.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {zoneDetail.status === "ready" && selectedZone.type === "station" && (
+                <>
+                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                    Trains autour de cette heure
+                  </h4>
+                  {zoneDetail.trains.length === 0 ? (
+                    <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun train proche de cette heure.</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {zoneDetail.trains.map((t, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "#14171A", border: "1px solid #262B2F", borderRadius: 10, padding: "9px 12px" }}>
+                          <TrainFront size={14} color="#3E8E8A" style={{ flexShrink: 0 }} />
+                          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, width: 44, flexShrink: 0 }}>{t.time}</span>
+                          <span style={{ fontSize: 13, color: "#C7CCCF" }}>{t.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {zoneDetail.status === "ready" && !["airport", "station"].includes(selectedZone.type) && (
+                <>
+                  <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12.5, fontWeight: 600, color: "#9BA3A8", margin: "0 0 8px" }}>
+                    Événements du jour à proximité
+                  </h4>
+                  {zoneDetail.events.length === 0 ? (
+                    <p style={{ fontSize: 13, color: "#9BA3A8" }}>Aucun événement recensé pour l'instant.</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {zoneDetail.events.slice(0, 6).map((ev, i) => (
+                        <div key={i} style={{ background: "#14171A", border: "1px solid #262B2F", borderRadius: 10, padding: "9px 12px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 500 }}>{ev.name}</div>
+                          <div style={{ fontSize: 11.5, color: "#9BA3A8", marginTop: 2 }}>
+                            {ev.date} {ev.time ? `· ${ev.time}` : ""} — {ev.venue}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
