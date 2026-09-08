@@ -887,10 +887,26 @@ export default function App() {
                 />
                 <span style={{ fontSize: 11.5, color: "#9BA3A8" }}>
                   {liveEvents.status === "loading" && "Récupération des vrais événements…"}
-                  {liveEvents.status === "ready" && "Données en direct (Ticketmaster)"}
+                  {liveEvents.status === "ready" && "Données en direct"}
                   {liveEvents.status === "error" && "Serveur injoignable — exemples affichés"}
                 </span>
               </div>
+
+              {liveEvents.status === "ready" && liveEvents.events.length === 0 && (
+                <div
+                  style={{
+                    background: "#1D2124",
+                    border: "1px solid #262B2F",
+                    borderRadius: 12,
+                    padding: "14px",
+                    marginBottom: 10,
+                    fontSize: 13,
+                    color: "#9BA3A8",
+                  }}
+                >
+                  Aucun événement à venir n'est encore publié pour {city.label} sur notre source actuelle. Ce n'est pas un problème technique — les organisateurs ajoutent leurs événements au fil du temps, revenez vérifier plus tard.
+                </div>
+              )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {(liveEvents.status === "ready" ? liveEvents.events : city.events).map((ev, i) => (
