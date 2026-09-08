@@ -569,7 +569,7 @@ export default function App() {
     const station = STATION_NAMES[cityKey];
     Promise.allSettled([
       fetch(
-        `${SERVER_BASE_URL}/api/trains?station=${encodeURIComponent(station)}&kind=${trafficMode}&date=${trafficDate}`
+        `${SERVER_BASE_URL}/api/trains?station=${encodeURIComponent(station)}&kind=${trafficMode}&date=${trafficDate}&startHour=${trafficStartHour}&endHour=${trafficEndHour}`
       ).then((r) => r.json()),
       fetch(`${SERVER_BASE_URL}/api/flights?city=${cityKey}&kind=${trafficMode}&date=${trafficDate}`).then((r) =>
         r.json()
@@ -592,7 +592,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [tab, cityKey, trafficMode, trafficDate]);
+  }, [tab, cityKey, trafficMode, trafficDate, trafficStartHour, trafficEndHour]);
 
   // Filtre par plage horaire choisie (côté appli, sur les données déjà reçues)
   const filterByHourRange = (items) =>
