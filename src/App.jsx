@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Tooltip, AttributionControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import logoSrc from "./assets/logo.png";
 import {
@@ -517,7 +517,7 @@ function Sparkline({ values, hour }) {
 // Clé TomTom pour la couche trafic routier en direct — clé "publique"
 // par conception (protégée par liste de domaines autorisés côté TomTom,
 // pas par le secret), donc normal qu'elle soit visible ici.
-const TOMTOM_KEY = "gJVg4Tthyg45NGesmVJgZsYEkqiLeNSQ";
+const TOMTOM_KEY = "VOTRE_CLE_TOMTOM";
 
 function DemandMap({ zones, center, onZoneClick }) {
   const [showTraffic, setShowTraffic] = useState(true);
@@ -560,10 +560,12 @@ function DemandMap({ zones, center, onZoneClick }) {
         zoom={12}
         style={{ width: "100%", height: "100%", background: "#141A38" }}
         scrollWheelZoom={false}
+        attributionControl={false}
         key={`${center[0]}-${center[1]}`}
       >
+        <AttributionControl position="bottomright" prefix={false} />
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution='&copy; OpenStreetMap'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {showTraffic && (
@@ -795,6 +797,14 @@ export default function App() {
           cursor: pointer;
           margin-top: -6.5px;
         }
+        .leaflet-control-attribution {
+          font-size: 8px !important;
+          background: rgba(11,15,36,0.55) !important;
+          color: #8A92C2 !important;
+          padding: 0 4px !important;
+          line-height: 1.6 !important;
+        }
+        .leaflet-control-attribution a { color: #8A92C2 !important; }
       `}</style>
 
       {/* Cadre "téléphone" */}
