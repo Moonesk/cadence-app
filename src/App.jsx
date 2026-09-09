@@ -621,7 +621,6 @@ export default function App() {
     });
     return obj;
   });
-  const [demandView, setDemandView] = useState("map"); // "map" | "list"
   const [trafficMode, setTrafficMode] = useState("arrivals"); // "arrivals" | "departures"
   const [trafficStartHour, setTrafficStartHour] = useState(0);
   const [trafficEndHour, setTrafficEndHour] = useState(23);
@@ -1130,6 +1129,80 @@ export default function App() {
                 </div>
               </div>
 
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "0 0 10px" }}>
+                Demande par zone — {city.label}, {dayLabel}
+              </h2>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
+                {zonesScored.map((z) => {
+                  const Icon = ICONS[z.type];
+                  return (
+                    <div
+                      key={z.id}
+                      onClick={() => openZoneDetail(z, hour)}
+                      style={{
+                        background: "#141A38",
+                        border: "1px solid #2B3564",
+                        borderRadius: 14,
+                        padding: "12px 14px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: 12,
+                          background: TYPE_COLORS[z.type],
+                          boxShadow: `0 6px 16px -4px ${TYPE_COLORS[z.type]}66`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon size={18} color="#0B0F24" strokeWidth={2.3} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {z.name}
+                        </div>
+                        <Sparkline values={z.curve} hour={hour} />
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, flexShrink: 0 }}>
+                        <div
+                          style={{
+                            fontFamily: "'Space Grotesk', sans-serif",
+                            fontWeight: 600,
+                            fontSize: 17,
+                            color: demandColor(z.score),
+                            textAlign: "right",
+                          }}
+                        >
+                          {z.score}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            color: demandColor(z.score),
+                            background: `${demandColor(z.score)}22`,
+                            borderRadius: 999,
+                            padding: "2px 7px",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {z.score >= 70 ? "Fort" : z.score >= 40 ? "Modéré" : "Calme"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
               {/* Jour + heure */}
               <div
                 style={{
@@ -1181,112 +1254,11 @@ export default function App() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 10px" }}>
-                <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: 0 }}>
-                  Demande par zone — {city.label}, {dayLabel}
-                </h2>
-                <div style={{ display: "flex", gap: 4, background: "#141A38", borderRadius: 8, padding: 3, border: "1px solid #2B3564" }}>
-                  <button
-                    onClick={() => setDemandView("map")}
-                    aria-label="Vue carte"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 28,
-                      height: 24,
-                      borderRadius: 6,
-                      border: "none",
-                      background: demandView === "map" ? "rgba(76,141,255,0.18)" : "transparent",
-                      color: demandView === "map" ? "#4C8DFF" : "#5B6396",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <MapIcon size={14} />
-                  </button>
-                  <button
-                    onClick={() => setDemandView("list")}
-                    aria-label="Vue liste"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 28,
-                      height: 24,
-                      borderRadius: 6,
-                      border: "none",
-                      background: demandView === "list" ? "rgba(76,141,255,0.18)" : "transparent",
-                      color: demandView === "list" ? "#4C8DFF" : "#5B6396",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <List size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {demandView === "map" && (
-                <DemandMap zones={zonesScored} center={[city.lat, city.lon]} onZoneClick={(z) => openZoneDetail(z, hour)} />
-              )}
-
-              {demandView === "list" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {zonesScored.map((z) => {
-                  const Icon = ICONS[z.type];
-                  return (
-                    <div
-                      key={z.id}
-                      onClick={() => openZoneDetail(z, hour)}
-                      style={{
-                        background: "#141A38",
-                        border: "1px solid #2B3564",
-                        borderRadius: 14,
-                        padding: "12px 14px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 38,
-                          height: 38,
-                          borderRadius: 12,
-                          background: TYPE_COLORS[z.type],
-                          boxShadow: `0 6px 16px -4px ${TYPE_COLORS[z.type]}66`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Icon size={18} color="#0B0F24" strokeWidth={2.3} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {z.name}
-                        </div>
-                        <Sparkline values={z.curve} hour={hour} />
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: "'Space Grotesk', sans-serif",
-                          fontWeight: 600,
-                          fontSize: 17,
-                          color: demandColor(z.score),
-                          width: 34,
-                          textAlign: "right",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {z.score}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              )}
+              {/* Carte — section à part, indépendante de la liste */}
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 600, margin: "0 0 10px" }}>
+                Carte des zones
+              </h2>
+              <DemandMap zones={zonesScored} center={[city.lat, city.lon]} onZoneClick={(z) => openZoneDetail(z, hour)} />
 
               <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#141A38", borderRadius: 10, border: "1px solid #2B3564" }}>
                 <Info size={15} color="#5B6396" style={{ flexShrink: 0, marginTop: 1 }} />
