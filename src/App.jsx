@@ -497,21 +497,28 @@ function formatHour(h) {
 function Sparkline({ values, hour }) {
   const w = 100;
   const h = 28;
-  const pts = values
-    .map((v, i) => `${(i / 23) * w},${h - (v / 100) * h}`)
-    .join(" ");
-  const cx = (hour / 23) * w;
-  const cy = h - (values[hour] / 100) * h;
+  const barCount = values.length; // 24 heures
+  const gap = 1;
+  const barW = w / barCount - gap;
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none">
-      <polyline
-        points={pts}
-        fill="none"
-        stroke="#4B5359"
-        strokeWidth="1.5"
-        vectorEffect="non-scaling-stroke"
-      />
-      <circle cx={cx} cy={cy} r="2.6" fill={demandColor(values[hour])} />
+      {values.map((v, i) => {
+        const barH = Math.max((v / 100) * h, 1.5);
+        const x = i * (w / barCount);
+        const y = h - barH;
+        const isCurrent = i === hour;
+        return (
+          <rect
+            key={i}
+            x={x}
+            y={y}
+            width={barW}
+            height={barH}
+            rx={0.6}
+            fill={isCurrent ? demandColor(v) : "#3A4578"}
+          />
+        );
+      })}
     </svg>
   );
 }
