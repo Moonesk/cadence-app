@@ -625,7 +625,6 @@ export default function App() {
   const [trafficMode, setTrafficMode] = useState("arrivals"); // "arrivals" | "departures"
   const [trafficStartHour, setTrafficStartHour] = useState(0);
   const [trafficEndHour, setTrafficEndHour] = useState(23);
-  const [hourZone, setHourZone] = useState(now.getHours()); // heure propre à "Demande par zone"
   const [liveNow, setLiveNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -769,7 +768,7 @@ export default function App() {
     return Object.entries(CITIES).filter(([, c]) => normalize(c.label).includes(q));
   }, [cityQuery]);
 
-  const watchZonesScored = useMemo(() => {
+  const zonesScored = useMemo(() => {
     return city.zones
       .map((z) => {
         const curve = dayType === "weekday" ? z.curveWeekday : z.curveWeekend;
@@ -778,16 +777,7 @@ export default function App() {
       .sort((a, b) => b.score - a.score);
   }, [city, dayType, hour]);
 
-  const zonesScored = useMemo(() => {
-    return city.zones
-      .map((z) => {
-        const curve = dayType === "weekday" ? z.curveWeekday : z.curveWeekend;
-        return { ...z, curve, score: curve[hourZone] };
-      })
-      .sort((a, b) => b.score - a.score);
-  }, [city, dayType, hourZone]);
-
-  const hotZones = watchZonesScored.filter((z) => z.score >= 70);
+  const hotZones = zonesScored.filter((z) => z.score >= 70);
   const hourLabel = `${String(hour).padStart(2, "0")}:00`;
   const dayLabel = dayOffset === 0 ? "aujourd'hui" : "demain";
 
@@ -1140,92 +1130,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Prochains repères */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#2FD480" }} />
-                  <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 14.5 }}>
-                    Zones à surveiller
-                  </span>
-                </div>
-                <button
-                  onClick={() => setDemandView("list")}
-                  style={{ display: "flex", alignItems: "center", gap: 2, background: "none", border: "none", color: "#4C8DFF", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                >
-                  Voir tout <ChevronRight size={13} />
-                </button>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-                {watchZonesScored.slice(0, 4).map((z) => {
-                  const Icon = ICONS[z.type];
-                  const typeLabels = { airport: "Aéroport", station: "Gare", business: "Affaires", nightlife: "Vie nocturne", leisure: "Loisirs" };
-                  return (
-                    <div
-                      key={z.id}
-                      onClick={() => openZoneDetail(z, hour)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        background: "#141A38",
-                        border: "1px solid #2B3564",
-                        borderRadius: 14,
-                        padding: "10px 12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 11,
-                          background: TYPE_COLORS[z.type],
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Icon size={16} color="#0B0F24" strokeWidth={2.3} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                          <span
-                            style={{
-                              fontSize: 9.5,
-                              fontWeight: 700,
-                              color: TYPE_COLORS[z.type],
-                              background: `${TYPE_COLORS[z.type]}22`,
-                              borderRadius: 999,
-                              padding: "2px 7px",
-                            }}
-                          >
-                            {typeLabels[z.type]}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {z.name}
-                        </div>
-                      </div>
-                      <span
-                        style={{
-                          fontSize: 10.5,
-                          fontWeight: 700,
-                          color: demandColor(z.score),
-                          background: `${demandColor(z.score)}22`,
-                          borderRadius: 999,
-                          padding: "5px 9px",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {z.score >= 70 ? "Fort" : z.score >= 40 ? "Modéré" : "Calme"}
-                      </span>
-                      <ChevronRight size={15} color="#5B6396" style={{ flexShrink: 0 }} />
-                    </div>
-                  );
-                })}
-              </div>
-
               {/* Jour + heure */}
               <div
                 style={{
@@ -1322,7 +1226,7 @@ export default function App() {
               </div>
 
               {demandView === "map" && (
-                <DemandMap zones={zonesScored} center={[city.lat, city.lon]} onZoneClick={(z) => openZoneDetail(z, hourZone)} />
+                <DemandMap zones={zonesScored} center={[city.lat, city.lon]} onZoneClick={(z) => openZoneDetail(z, hour)} />
               )}
 
               {demandView === "list" && (
@@ -1332,7 +1236,7 @@ export default function App() {
                   return (
                     <div
                       key={z.id}
-                      onClick={() => openZoneDetail(z, hourZone)}
+                      onClick={() => openZoneDetail(z, hour)}
                       style={{
                         background: "#141A38",
                         border: "1px solid #2B3564",
@@ -1363,7 +1267,7 @@ export default function App() {
                         <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {z.name}
                         </div>
-                        <Sparkline values={z.curve} hour={hourZone} />
+                        <Sparkline values={z.curve} hour={hour} />
                       </div>
                       <div
                         style={{
@@ -1383,58 +1287,6 @@ export default function App() {
                 })}
               </div>
               )}
-
-              {/* Heure — propre à "Demande par zone", indépendante du curseur du haut */}
-              <div
-                style={{
-                  background: "#141A38",
-                  border: "1px solid #2B3564",
-                  borderRadius: 14,
-                  padding: "14px 16px",
-                  marginTop: 14,
-                  marginBottom: 16,
-                }}
-              >
-                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                  {[
-                    [0, "Aujourd'hui"],
-                    [1, "Demain"],
-                  ].map(([val, label]) => (
-                    <button
-                      key={val}
-                      onClick={() => setDayOffset(val)}
-                      style={{
-                        flex: 1,
-                        padding: "7px 0",
-                        borderRadius: 8,
-                        border: "1px solid " + (dayOffset === val ? "#4C8DFF" : "#3A4578"),
-                        background: dayOffset === val ? "rgba(76,141,255,0.16)" : "transparent",
-                        color: dayOffset === val ? "#4C8DFF" : "#8A92C2",
-                        fontSize: 13,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={23}
-                  value={hourZone}
-                  onChange={(e) => setHourZone(Number(e.target.value))}
-                  style={{ width: "100%" }}
-                />
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#5B6396", marginTop: 4 }}>
-                  <span>00:00</span>
-                  <span>06:00</span>
-                  <span>12:00</span>
-                  <span>18:00</span>
-                  <span>23:00</span>
-                </div>
-              </div>
 
               <div style={{ display: "flex", gap: 8, marginTop: 16, padding: "10px 12px", background: "#141A38", borderRadius: 10, border: "1px solid #2B3564" }}>
                 <Info size={15} color="#5B6396" style={{ flexShrink: 0, marginTop: 1 }} />
