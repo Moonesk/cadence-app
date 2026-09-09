@@ -1010,22 +1010,6 @@ export default function App() {
                     <div style={{ fontSize: 11.5, color: "#8A92C2" }}>Bonne route !</div>
                   </div>
                 </div>
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                    fontSize: 11.5,
-                    fontWeight: 600,
-                    color: "#C7CDF0",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid #2B3564",
-                    borderRadius: 999,
-                    padding: "6px 10px",
-                  }}
-                >
-                  <Car size={13} /> VTC / Taxi
-                </span>
               </div>
 
               {/* Toggle En ligne + ville */}
