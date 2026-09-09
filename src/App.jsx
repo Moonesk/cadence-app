@@ -526,7 +526,7 @@ function Sparkline({ values, hour }) {
 // Clé TomTom pour la couche trafic routier en direct — clé "publique"
 // par conception (protégée par liste de domaines autorisés côté TomTom,
 // pas par le secret), donc normal qu'elle soit visible ici.
-const TOMTOM_KEY = "VOTRE_CLE_TOMTOM";
+const TOMTOM_KEY = "gJVg4Tthyg45NGesmVJgZsYEkqiLeNSQ";
 
 function DemandMap({ zones, center, onZoneClick }) {
   const [showTraffic, setShowTraffic] = useState(true);
