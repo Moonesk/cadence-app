@@ -875,18 +875,6 @@ export default function App() {
                 >
                   Cadence
                 </span>
-                <span
-                  style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    fontWeight: 600,
-                    fontSize: 9.5,
-                    letterSpacing: "0.08em",
-                    color: "#5B6396",
-                    marginTop: 1,
-                  }}
-                >
-                  VTC &amp; TAXI
-                </span>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -914,9 +902,6 @@ export default function App() {
               </span>
             </div>
           </div>
-          <p style={{ margin: "2px 0 14px", fontSize: 13, color: "#8A92C2" }}>
-            Où et quand la demande est forte
-          </p>
 
           {/* Recherche de ville */}
           <div style={{ position: "relative" }}>
